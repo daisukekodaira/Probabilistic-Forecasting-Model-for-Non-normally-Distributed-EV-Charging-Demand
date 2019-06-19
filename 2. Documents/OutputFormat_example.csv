@@ -1,0 +1,5 @@
+BuildingIndex,P1(CustomerID),Plug-in mean,Plug-in lowerBound,Plug-in upperBound,Plug-out mean,Plug-out lowerBound,Plug-out upperBound,Initial SOC mean[%],Initial SOC lowerBound [%],Initial SOC upperBound [%]
+1,1,0/23/6/9/2018,3/22/6/9/2018,3/23/6/9/2018,0/0/7/9/2018,3/1/7/9/2018,3/2/7/9/2018,50,35,70
+1,2,0/3/7/9/2018,3/3/7/9/2018,3/2/7/9/2018,0/17/7/9/2018,3/16/7/9/2018,3/18/7/9/2018,50,35,70
+1,3,,,,,,,,,
+1,4,,,,,,,,,
