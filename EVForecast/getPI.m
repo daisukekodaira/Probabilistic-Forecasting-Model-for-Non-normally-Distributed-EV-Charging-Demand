@@ -1,21 +1,22 @@
-% Return Prediction Interval (PI) based on sampling basis method
-% "Sampling basis method" is just based on the counting the index of the array in ascending order
+function [PImean, PImin, PImax] = getPI(DetermPred, predictors, err_distribution)
 
-
-function [probPred] = getPI(probPred, percentage)    
-    for i = 1:size(probPred,1)
-        if isnan(probPred(i).pred) == 0  % when the element is not NaN
-            srtPred = sort(probPred(i).pred,1);
-            size_PI = size(srtPred,1);
-            lowerIdx = round(size_PI*percentage);
-            upperIdx = round(size_PI*(1-percentage));       
-            if lowerIdx < 1 
-                lowerIdx = 1;
-            elseif size_PI < lowerIdx
-                lowerIdx = size_PI;
-            end
-            probPred(i).PImin = srtPred(lowerIdx);
-            probPred(i).PImax = srtPred(upperIdx);                        
+    for i = 1:size(DetermPred,1)
+        hour = predictors(i,5)+1;   % hour 1~24 (original data is from 0 to 23, so add '1' for the matrix)
+        quater = predictors(i,6)+1; % quater 1~4 (original data is from 0 to 3, so add '1' for the matrix)
+        prob_prediction(hour, quater).pred = DetermPred(i)+err_distribution(hour, quater).err;
+        % All elements must be bigger than zero. In this case, all EVs just
+        % is for only charge. (We can change this concept for another project)
+        prob_prediction(hour, quater).pred = max(prob_prediction(hour, quater).pred, 0);    
+        % When the validation date is for only one day, generate duplicated records for mean function
+        if size(prob_prediction(hour, quater).pred, 2) == 1
+            prob_prediction(hour, quater).pred = [prob_prediction(hour, quater).pred prob_prediction(hour, quater).pred];
         end
+        % Get mean value of Probabilistic load prediction
+        prob_prediction(hour, quater).mean = mean(prob_prediction(hour, quater).pred)';
+        % Get Confidence Interval
+        %  - getPI_confInter: 2sigma(95%) boundaries return
+        %  - getPI_sampling: please specify the percentage by yourself 
+        [PImean(i,1), PImin(i,1), PImax(i,1)] = getPI_confInter(prob_prediction(hour, quater).pred);
+        % [PImean(i,1), PImin(i,1), PImax(i,1)] = getPI_sampling(prob_prediction(hour, quater).pred, );
     end
-end    
+end

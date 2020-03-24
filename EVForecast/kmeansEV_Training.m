@@ -15,17 +15,19 @@ function kmeansEV_Training(LongTermpastData, path)
     %% Kmeans clustering for Charge/Discharge data
     % Extract appropriate data from inputdata for Energy transactions: pastEnegyTrans
     % Extract appropriate data from inputdata for SOC prediction: pastSOC
-    PastPredictors= train_data(:,2:9); % Extract predictors (Year,Month,Day,Hour,Quater,P1,P2,P3)
-    pastEnegyTrans = train_data(:, 10); % 10 : Charge/Discharge [kwh]
-    pastSOC = train_data(:,11); % 11: SOC[%]
+    PastPredictors= train_data(:,2:8); % Extract predictors (Year,Month,Day,Hour,Quater,P1(Day),P2(Holiday))
+    pastEnegyTrans = train_data(:, 9); % Charge/Discharge [kwh]
+    pastSOC = train_data(:,10); % SOC[%]
 
     % Set K for Charge/Discharge [kwh]. 50 is experimentally chosen
     % Set K for SOC[%]. 35 is experimentally chosen
-    k_EnergyTrans= 35;
-    k_SOC = 50;
+    k_EnergyTrans= 2;
+    k_SOC = 1;
+    
     % Train k-means clustering
     [idx_EnergyTrans, c_EnergyTrans] = kmeans(pastEnegyTrans, k_EnergyTrans);
     [idx_SOC, c_SOC] = kmeans(pastSOC, k_SOC);
+    
     % Train multiclass naive Bayes model
     nb_EnergyTrans = fitcnb(PastPredictors, idx_EnergyTrans,'Distribution','kernel');
     nb_SOC = fitcnb(PastPredictors, idx_SOC,'Distribution','kernel');
@@ -41,6 +43,6 @@ function kmeansEV_Training(LongTermpastData, path)
     % c_SOC: centroid for each cluster
     building_num = num2str(LongTermpastData(2,1)); % building number is necessary to be distinguished from other builiding mat files
     save_name = '\EVmodel_';
-    save_name = strcat(path,save_name,building_num,'.mat'); 
+    save_name = strcat(path,save_name,building_num,'.mat');
     save(save_name, 'idx_EnergyTrans','idx_SOC', 'k_EnergyTrans','k_SOC', 'nb_EnergyTrans','nb_SOC', 'c_EnergyTrans', 'c_SOC');
 end

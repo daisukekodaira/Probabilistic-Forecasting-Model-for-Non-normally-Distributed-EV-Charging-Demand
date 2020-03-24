@@ -37,86 +37,101 @@ end
 [energyAmount, modifiedStartTime, modifiedEndTime]   = CalcFragmentTime(StartTime, EndTime, oneMinutUsage);
 
 % Make table for outputfiles; calculate 15min kwh for each record
-buildinIndex = 1; % anynumber is ok
-data_matrix = zeros(size(T,1),11);
+buildingIndex = 1; % any number is ok
+
+% Specify each column for each label
+col_building = 1;
+col_year = 2;
+col_month = 3;
+col_day = 4;
+col_hour = 5;
+col_quarter = 6;
+col_P1 = 7; % P1(Day in a week)
+col_P2 = 8; % P2(Holiday or not)
+col_energy = 9;
+
+% Put default values
+data_matrix = zeros(size(T,1),col_energy);
 steps = 1;
+
+% Configure matrix
 for record = 1:size(T,1)
     curerrentTime = StartTime;
     while curerrentTime(record) <= modifiedEndTime(record)
-        data_matrix(steps,1) = buildinIndex;                                     % BuildingID; all 1
-        data_matrix(steps,2) = T.CPID(record);                                 % Charging Point ID
-        data_matrix(steps,3) = year(curerrentTime(record));           % year
-        data_matrix(steps,4) = month(curerrentTime(record));        % month
-        data_matrix(steps,5) = day(curerrentTime(record));            % Day
-        data_matrix(steps,6) = hour(curerrentTime(record));          % hour
-        data_matrix(steps,7) = floor(minute(curerrentTime(record))/15);      % Quarter   
+        data_matrix(steps,col_building) = buildingIndex;                                               % BuildingID; all 1
+        data_matrix(steps,col_year) = year(curerrentTime(record));                         % year
+        data_matrix(steps,col_month) = month(curerrentTime(record));                      % month
+        data_matrix(steps,col_day) = day(curerrentTime(record));                          % Day
+        data_matrix(steps,col_hour) = hour(curerrentTime(record));                         % hour
+        data_matrix(steps,col_quarter) = floor(minute(curerrentTime(record))/15);      % Quarter
+        data_matrix(steps,col_P1) = 0;                                                                    % P1(Day in a week)
+        data_matrix(steps,col_P2) = 0;                                                                    % P2(Holiday or not)
         if curerrentTime(record) == StartTime(record)
-           data_matrix(steps,12) = energyAmount(record,1);      % Charge/Discharge[kwh]
+           data_matrix(steps,col_energy) = energyAmount(record,1);      % Charge/Discharge[kwh]
            curerrentTime = modifiedStartTime;
            steps = steps+1;
         elseif curerrentTime(record) < modifiedEndTime(record)
-            data_matrix(steps,12) = 15*oneMinutUsage(record);
+            data_matrix(steps,col_energy) = 15*oneMinutUsage(record);
             curerrentTime = curerrentTime + minutes(15);
             steps = steps+1;
         else
-            data_matrix(steps,1) = buildinIndex;                                     % BuildingID; all 1
-            data_matrix(steps,2) = T.CPID(record);                                 % Charging Point ID
-            data_matrix(steps,3) = year(curerrentTime(record));           % year
-            data_matrix(steps,4) = month(curerrentTime(record));        % month
-            data_matrix(steps,5) = day(curerrentTime(record));            % Day
-            data_matrix(steps,6) = hour(curerrentTime(record));          % hour
-            data_matrix(steps,7) = floor(minute(curerrentTime(record))/15);      % Quarter   
-            data_matrix(steps,12) = energyAmount(record,2);              % Charge/Discharge[kwh]
+            data_matrix(steps,col_building) = buildingIndex;                                               % BuildingID; all 1
+            data_matrix(steps,col_year) = year(curerrentTime(record));                         % year
+            data_matrix(steps,col_month) = month(curerrentTime(record));                      % month
+            data_matrix(steps,col_day) = day(curerrentTime(record));                          % Day
+            data_matrix(steps,col_hour) = hour(curerrentTime(record));                         % hour
+            data_matrix(steps,col_quarter) = floor(minute(curerrentTime(record))/15);      % Quarter
+            data_matrix(steps,col_P1) = 0;                                                                    % P1(Day in a week)
+            data_matrix(steps,col_P2) = 0;                                                                    % P2(Holiday or not)
+            data_matrix(steps,col_energy) = energyAmount(record,2);                         % Charge/Discharge[kwh]
             steps = steps+1;
             break;
         end
     end
+    % Display the process for users
     if mod(record,1000) == 0
         fprintf('%.2f [%%]\n', 100*record/size(T,1));
     end
 end
 
 % Sort the records as time instances
-data_matrix = sortrows(data_matrix, [3 4 5 6 7]);         % sort by 3;year, 4;month, 5;dya, 6;hour, 7;quarter 
+% sort by year, month, day, hour, quarter 
+data_matrix = sortrows(data_matrix, [col_year col_month col_day col_hour col_quarter]);         
 
-%% Consolidate energy consumptions for the same time instance
+%% Consolidate energy consumptions for the same time instance -> no bug, confirmed 22th March
 % initilization
 record=1; % 1 quarter (record for output file)
 total_energy = 0;
 % Consolidation
 for time_inst = 1:size(data_matrix,1)
-    total_energy = total_energy + data_matrix(time_inst, 12);
-    % check if the last time_inst or not 
-    %  -> if the last tiem_inst, break the loop
+    total_energy = total_energy + data_matrix(time_inst, col_energy);
+    % check if the last time_inst or not
+    %  -> if the last time_inst, break the loop
     if time_inst == size(data_matrix,1)
-        % copy from "buildingIndex" to "quarter"
-        for i = 1:size(data_matrix,2) - 1  
-            output(record,i) = data_matrix(time_inst,i);
-        end
-        output(record,2) = 1; % "ChargingPointID" is not utlized, so just put "1" as an example.
-        output(record,12) = total_energy; % save the total energy during the quarter
+        output_matrix(record,col_building:col_P2) = data_matrix(time_inst, col_building:col_P2);
+        output_matrix(record,col_energy) = total_energy; % save the total energy during the quarter
         break;
-    % check if the new quarter or not
-    elseif data_matrix(time_inst,7) ~= data_matrix(time_inst+1,7) 
-        % copy from "buildingIndex" to "quarter"
-        for i = 1:size(data_matrix,2) - 1  
-            output(record,i) = data_matrix(time_inst,i);
-        end
-        output(record,2) = 1; % "ChargingPointID" is not utlized, so just put "1" as an example.
-        output(record,12) = total_energy; % save the total energy during the quarter
-        record = record+1;
+    % Check if the new quarter or not
+    elseif data_matrix(time_inst,col_quarter) ~= data_matrix(time_inst+1,col_quarter) 
+        % If the record is for new quarter, store the accumulated energy transaction with predictors
+        % Copy records except energyTrans and SOC
+        output_matrix(record,col_building:col_P2) = data_matrix(time_inst, col_building:col_P2);
+        output_matrix(record,col_energy) = total_energy; % save the total energy during the quarter
+        % Reset the accumulated energy for specific time record 
         total_energy = 0;
+        % Move to next record
+        record = record+1;
     end
 end
 
 %% output
 % Write the data to csv files
 % Write header
-hedder = {'BuildingIndex', 'CustomerID', 'Year', 'Month', 'Day', 'Hour', 'Quarter', 'P1(Day)', 'P2(Holiday)',...
-                  'P3(HighestTemp)', 'P4(Weather)', 'Charge/Discharge[kwh]', 'SOC[%]'};
+hedder = {'BuildingIndex', 'Year', 'Month', 'Day', 'Hour', 'Quarter', 'P1(Day in a week)', 'P2(Holiday or not)',...
+                  'Charge/Discharge[kwh]'};
 fid = fopen('LongTermEVData.csv','wt');
 fprintf(fid,'%s,',hedder{:});
 fprintf(fid,'\n');
 % Write data
-fprintf(fid,['%d,', '%d,', '%4d,', '%02d,', '%02d,', '%02d,', '%d,', '%d,', '%d,', '%d,', '%f,', '%f', '\n'], output');
+fprintf(fid,['%d,', '%4d,', '%02d,', '%02d,', '%02d,', '%d,', '%d,', '%d,', '%f,', '\n'], output_matrix');
 fclose(fid);
