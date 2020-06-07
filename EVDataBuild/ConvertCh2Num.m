@@ -1,7 +1,7 @@
 % Description for this code:
 %   Convert characters in original.csv files as "EVdata.csv" to numbers.
 
-function T = ConvertCh2Num(T)
+function T = convertCh2Num(T)
     % Pick each column
     siteArray = zeros(size(T.Site,1),1);
     groupAaary = zeros(size(T.Group,1),1);

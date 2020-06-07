@@ -1,3 +1,6 @@
+% Code for individual EV forecasting
+
+
 clear;
 clc;
 %% Load data
@@ -32,7 +35,7 @@ endminute=minute(endtime);
 data=[information styear stmonth stday sthour stminute endyear endmonth endday endhour endminute information2];
 %% make csv file
 csvwrite('predata.csv',data)
-hedder = {'CargingEent', 'UserID', 'CPID', 'Connector', 'Startyear', 'StartMonth', 'StartDay', 'StartHour', 'StartQuarter',...
+hedder = {'CargingEvent', 'UserID', 'CPID', 'Connector', 'Startyear', 'StartMonth', 'StartDay', 'StartHour', 'StartQuarter',...
                   'EndYear', 'EndMonth', 'EndDay', 'EndHour', 'EndQuarter', 'TotalKW', 'Cost', 'Site', 'Group', 'Model'};
 fid = fopen('predata.csv','wt');
 fprintf(fid,'%s,',hedder{:});
