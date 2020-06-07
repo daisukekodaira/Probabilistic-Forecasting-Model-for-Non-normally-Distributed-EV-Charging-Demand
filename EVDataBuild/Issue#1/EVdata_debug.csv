@@ -1,4 +1,0 @@
-Charging event,User ID,CP ID,Connector,Start Date,Start Time,End Date,End Time,Total kWh,Cost,Site,Group,Model
-7751157,601838,50914,1,6/9/2018,23:55,7/9/2018,7:03,22.287,0,"Lochee Charging Hub, Dundee",APT Controls; CYC; ChargePlace Scotland; Dundee City Council,APT 22kW Dual Outlet
-7751142,604982,50349,2,6/9/2018,23:38,6/9/2018,23:48,7.08,0,"Greenmarket Multi Car Park, Dundee",APT Controls; CYC; ChargePlace Scotland; Dundee City Council,APT Dual Rapid Charger
-7751140,603522H,50911,2,6/9/2018,23:36,6/9/2018,23:56,8.22,0,"Queen Street Car Park, Broughty Ferry, Dundee",APT Controls; CYC; ChargePlace Scotland; Dundee City Council,APT Triple Rapid Charger

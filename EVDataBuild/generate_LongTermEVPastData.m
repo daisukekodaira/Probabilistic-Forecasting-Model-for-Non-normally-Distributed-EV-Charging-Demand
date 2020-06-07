@@ -9,31 +9,26 @@
 
 function Generate_LongTermEVPastData(inputFileName, outputFileName)
 
-    %% Read and format input data
-    opts = detectImportOptions(inputFileName);
-    % read input csv file
-    T = readtable(inputFileName,opts); 
+    %% Read and format input data    
+    T = readtable(inputFileName,'Format','%d %s %d %d %{dd/MM/yyyy}D %{HH:mm}D %{dd/MM/yyyy}D %{HH:mm}D %f %f %s %s %s');
     % Convert charactor to the number for the k-means and NN
     T = ConvertCh2Num(T);
-    % Change the format of the data from 'char' to 'datetime'
-    T.StartTime = datetime(T.StartTime,'InputFormat','HH:mm');
-    T.EndTime = datetime(T.EndTime,'InputFormat','HH:mm');
+    % Add time part to the date data
+    T.StartDate = datetime(T.StartDate,'Format','dd/MM/yyyy HH:mm');
+    T.EndDate = datetime(T.EndDate,'Format','dd/MM/yyyy HH:mm');
     % Erase the record in case that the EndTime is missing (still connected)
     T = rmmissing(T,'DataVariables',{'EndTime'});
     % Combine the Start date and time
     StartTime = T.StartDate + timeofday(T.StartTime);
     EndTime = T.EndDate + timeofday(T.EndTime);
-    % Clean up the original table (for your reference)
-    T.StartTime = timeofday(T.StartTime);
-    T.EndTime = timeofday(T.EndTime);
 
     %% Process the data; convert contanous time stamps into 15 min inverval data
     % Calculate kwh for 1min; each record has one 1min kwh
     ConnectionDuration = minutes(EndTime - StartTime);
-    oneMinutUsage = T.TotalKWh./ConnectionDuration;
+    oneMinutUsage = T.TotalkWh./ConnectionDuration;
     for i = 1:size(ConnectionDuration,1) % erase Inf caused by the case that StartTime and EndTime have exact same time stamp 
         if oneMinutUsage(i) == Inf
-            oneMinutUsage(i) = T.TotalKWh(i);
+            oneMinutUsage(i) = T.TotalkWh(i);
         end
     end
 
