@@ -37,8 +37,8 @@ function flag = setEVModel(LongTermPastData)
     predictors = train_data(:,col_building:col_P2);
     
     %% Train each model using past load data
-    % Note: 0 means not true. If this function got the past data, model have to be trained
     kmeansEV_Training(train_data, path);
+    % NeuralNetwork_Forecast() % Add NN here later
 
     %% Validate the performance of each model
     % Note: return shouldn't be located inside of structure. It should be sotred as matrix.
