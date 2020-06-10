@@ -1,4 +1,9 @@
-clear all; clc; close all;
+clear all;
+clc;
+close all;
 
-getEVForecasting([pwd, '\','allPastData.csv'], 'Result_EVForecasting.csv');
 
+
+y_pred = getEVModel([pwd,'\','shortTermEVData.csv'],...
+                        [pwd,'\','forecastEVData.csv'],...
+                        [pwd,'\','resultEVData.csv'])
