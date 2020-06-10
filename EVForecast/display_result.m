@@ -2,8 +2,13 @@
 % This function is only for debug
 % -------------------------------------------------------------------
 
-function display_result(figTitle, PI, instances, determPred, observed, alph)
-    graph_desc(1:instances, determPred, observed, PI, figTitle, alph);
+function display_result(figTitle, forecastResult, target, alph)
+    % Set variables for graph description
+    instances = size(forecastResult(:).Energy(:),1);
+    determPred = forecastResult.Energy(:,1);
+    PI = forecastResult.Energy(:,2:3);
+    
+    graph_desc(1:instances, determPred, target, PI, figTitle, alph);
     % Cover Rate of PI
     count = 0;
     for i = 1:size(observed,1)

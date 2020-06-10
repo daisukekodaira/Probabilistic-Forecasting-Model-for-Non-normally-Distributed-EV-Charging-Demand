@@ -4,3 +4,9 @@ Target       2018/9/1 - 2018/9/8
 Forecast    2018/9/1 - 2018/9/8
 ShortTerm 2018/8/24 - 2018/8/31
 LongTerm 2017/9/1 - 2018/8/31
+
+all past data 2017/9/1 - 2018/9/8
+
+Note:
+- Eliminate "," from Site column
+- Erase the space in the header
