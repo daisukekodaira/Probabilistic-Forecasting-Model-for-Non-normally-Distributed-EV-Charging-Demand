@@ -48,6 +48,6 @@ function graph_desc(x, y_pred, y_true, boundaries, name, ci_percentage)
    
     % Labels of the graph
     xlabel('Time steps in a day');
-    ylabel('Load [W]');
+    ylabel('Load [kW]');
     title(name);
 end
