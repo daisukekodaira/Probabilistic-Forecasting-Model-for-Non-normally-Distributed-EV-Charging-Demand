@@ -1,6 +1,4 @@
-clear all;
-clc;
-close all;
+clear all; clc; close all;
 
-getRepeatedEVForecasting([pwd, '\','allPastData.csv'], 'Result_EVForecasting');
+getEVForecasting([pwd, '\','allPastData.csv'], 'Result_EVForecasting.csv');
 
