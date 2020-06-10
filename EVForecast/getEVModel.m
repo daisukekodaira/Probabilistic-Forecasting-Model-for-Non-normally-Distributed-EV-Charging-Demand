@@ -59,7 +59,7 @@ function flag = getEVModel(shortTermPastData, ForecastData, ResultData)
     %   1. k-menas
     %   2. Neural network
     [PredEnergyTrans_kmeans(:,1), PredSOC_kmeans(:,1)]  = kmeansEV_Forecast(predictors, filepath);
-    %     [PredEnergyTrans_Valid(1).data(:,1), PredSOC_Valid(1).data(:,1)]  = NeuralNetwork_Forecast(predictors, path);
+    [PredEnergyTrans_Valid(1).data(:,1), PredSOC_Valid(1).data(:,1)]  = NeuralNetEV_Forecast(predictors, path); % Under construction
     PredEnergyTrans(1).data(:,1) =  PredEnergyTrans_kmeans(:,1);
     PredSOC(1).data(:,1) =  PredSOC_kmeans(:,1);
     
