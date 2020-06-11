@@ -1,6 +1,6 @@
 % ---------------------------------------------------------------------------
-% Load prediction: Model development algorithm 
-% 2019/03/6 Updated by Daisuke Kodaira 
+% EV demand forecast: Prediction Model development algorithm 
+% 10th June, 2020 Updated by Daisuke Kodaira 
 % daisuke.kodaira03@gmail.com
 % 
 % function flag =setEVModel(LongTermPastData)
@@ -34,18 +34,20 @@ function flag = setEVModel(LongTermPastData)
     col_energy = 9;
     col_soc = 10;
     % Pick a predictor part
+    colPredictors = [col_building:col_P2];
     predictors = train_data(:,col_building:col_P2);
     
     %% Train each model using past load data
     kmeansEV_Training(train_data, path);
-    NN_Training(train_data, path);
-    
+    neuralNetEV_Training(train_data, colPredictors, path); % Add NN here later
+
     %% Validate the performance of each model
     % Note: return shouldn't be located inside of structure. It should be sotred as matrix.
     %           This is because it makes problem after .m files is converted into java files 
     [PredEnergyTrans_kmeans(:,1), PredSOC_kmeans(:,1)]  = kmeansEV_Forecast(predictors, path);
-    [PredEnergyTrans_Valid(1).data(:,1), PredSOC_Valid(1).data(:,1)] = NN_Forecast(predictors, path); 
-    
+    % Under construction ------------------------------------------------------------------------------
+    %     [PredEnergyTrans_Valid(1).data(:,1), PredSOC_Valid(1).data(:,1)] = NeuralNetwork_Forecast(predictors, path); 
+    % --------------------------------------------------------------------------------------------------------
     PredEnergyTrans_Valid(1).data(:,1) =  PredEnergyTrans_kmeans(:,1);  
     PredSOC_Valid(1).data(:,1) =  PredSOC_kmeans(:,1);
     

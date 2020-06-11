@@ -1,0 +1,41 @@
+function neuralNetEV_Training(LongTermpastData, col_predictors, path)
+    %% PastData
+    train_data = LongTermpastData(1:(end-96*7),:);    % PastData load
+    n_instance = size(train_data,1);    % Number of instances in the training data set
+    
+    %% Train the model for Energy Transition
+    % Iterete 3 times to make average of them. (more than 3 is also acceptable)
+    % The forecasting error from randomness of neural network is reduced.
+    for i_loop = 1:3
+        x = transpose(train_data(1:n_instance,col_predictors)); % input(feature)
+        t = transpose(train_data(1:n_instance,9)); % target
+        % Create and display the network
+        net = fitnet([20,20,20,15],'trainscg');
+        net.trainParam.showWindow = false;
+        net = train(net,x,t); % Train the network using the data in x and t
+        networks{i_loop} = net;             % save result
+    end   
+    
+    %% save result mat file
+    clearvars input;
+    clearvars shortTermPastData;
+    building_num = num2str(LongTermpastData(2,1));
+    save_name = '\EV_NeuralNetwork_';
+    save_name = strcat(path,save_name,building_num,'.mat');
+    clearvars path;
+    save(save_name,'EVnetworks');
+
+end
+
+function trainedNet = NeuralNet_train(loop, traindata, targetColumn)
+    for loop = 1:traindata
+        x = transpose(traindata(1:n_instance,col_predictors)); % input(feature)
+        t = transpose(traindata(1:n_instance,9)); % target
+        % Create and display the network
+        net = fitnet([20,20,20,15],'trainscg');
+        net.trainParam.showWindow = false;
+        net = train(net,x,t); % Train the network using the data in x and t
+        trainedNet{i_loop} = net;             % save result
+    end   
+
+end

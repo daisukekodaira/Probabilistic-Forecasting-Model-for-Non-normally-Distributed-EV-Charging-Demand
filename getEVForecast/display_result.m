@@ -2,23 +2,17 @@
 % This function is only for debug
 % -------------------------------------------------------------------
 
-function display_result(figTitle, PIMean, PIMin, PIMax, target, alph)
-    % Set variables for graph description
-    instances = size(PIMean,1);
-    PI = [PIMin PIMax];    
-    % Describe graph
-    graph_desc(1:instances, PIMean, target, PI, figTitle, alph);
-    % Calculate cover rate of prediction interval
-    % - Calculate how many forecasted mean values are between the upper PI and lower PI
+function display_result(figTitle, PI, instances, determPred, observed, alph)
+    graph_desc(1:instances, determPred, observed, PI, figTitle, alph);
+    % Cover Rate of PI
     count = 0;
-    for i = 1:size(target,1)
-        if (PI(i,1)<=target(i)) && (target(i)<=PI(i,2))
+    for i = 1:size(observed,1)
+        if (PI(i,1)<=observed(i)) && (observed(i)<=PI(i,2))
             count = count+1;
         end
     end
-    PICoverRate = 100*count/size(target,1);
-    MAPE = mean(abs(PIMean - target)*100./target); % combined
-    % display
+    PICoverRate = 100*count/size(observed,1);
+    MAPE = mean(abs(determPred - observed)*100./observed); % combined
     disp(['PI cover rate is ',num2str(PICoverRate), '[%]/', num2str(100*(1-alph)), '[%]'])
     disp(['MAPE of mean: ', num2str(MAPE), '[%]'])
 end
@@ -48,6 +42,6 @@ function graph_desc(x, y_pred, y_true, boundaries, name, ci_percentage)
    
     % Labels of the graph
     xlabel('Time steps in a day');
-    ylabel('Load [kW]');
+    ylabel('Load [W]');
     title(name);
 end
