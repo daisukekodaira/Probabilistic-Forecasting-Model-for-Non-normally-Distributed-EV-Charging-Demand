@@ -1,25 +1,26 @@
 function neuralNetEV_Training(LongTermpastData, colPredictors, path)
-    disp('Training the Neraul network....');
+    % Display for user
+    disp('Training the neraul network model....');
+    
     %% PastData
     trainData = LongTermpastData(1:(end-96*7),:);    % PastData load
     
     %% Train the model for Energy Transition
     % Training for Energy Trantision
     colTarget = 9; % the column of Energy Transition
-    trainedNet_EnergTrans = NeuralNet_train(trainData, colPredictors, colTarget);
+    trainedNet_EnergyTrans = NeuralNet_train(trainData, colPredictors, colTarget);
     % Training for SOC
     colTarget = 10; % the column of SOC
     trainedNet_SOC = NeuralNet_train(trainData, colPredictors, colTarget);
     
     %% save result mat file
-    clearvars input;
-    clearvars shortTermPastData;
     building_num = num2str(LongTermpastData(2,1));
-    save_name = '\EV_NeuralNetwork_';
-    save_name = strcat(path,save_name,building_num,'.mat');
+    save_name1 = '\EV_trainedNeuralNet_';
+    save_fullPath = strcat(path,save_name1,building_num,'.mat');
     clearvars path;
-    save(save_name,'EVnetworks');
-    disp('Training the Neraul network....Done!');
+    save(save_fullPath, 'trainedNet_EnergyTrans', 'trainedNet_SOC');
+    % Display for user
+    disp('Training the neraul network model.... Done!');
 end
 
 function trainedNet = NeuralNet_train(trainData, columnPredictors, columnTarget)
@@ -38,5 +39,4 @@ function trainedNet = NeuralNet_train(trainData, columnPredictors, columnTarget)
         net = train(net,x,t); % Train the network using the data in x and t
         trainedNet{i} = net;             % save result
     end   
-
 end

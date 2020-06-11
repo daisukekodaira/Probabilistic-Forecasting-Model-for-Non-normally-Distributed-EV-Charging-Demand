@@ -42,7 +42,7 @@ function kmeansEV_Training(LongTermpastData, path)
     % c_EnergyTrans: centroid for each cluster. The number of these values must correspond with k_EnergyTrans
     % c_SOC: centroid for each cluster
     building_num = num2str(LongTermpastData(2,1)); % building number is necessary to be distinguished from other builiding mat files
-    save_name = '\EVmodel_';
+    save_name = '\EV_trainedKmeans_';
     save_name = strcat(path,save_name,building_num,'.mat');
     save(save_name, 'idx_EnergyTrans','idx_SOC', 'k_EnergyTrans','k_SOC', 'nb_EnergyTrans','nb_SOC', 'c_EnergyTrans', 'c_SOC');
 end

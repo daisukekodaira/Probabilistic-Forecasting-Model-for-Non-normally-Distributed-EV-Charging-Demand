@@ -8,7 +8,7 @@
 %         flag = -1; if operation fails.
 % ----------------------------------------------------------------------------
 
-function flag = setEVModel(LongTermPastData)
+function setEVModel(LongTermPastData)
     tic;
     warning('off','all');   % Warning is not shown
     
@@ -17,7 +17,7 @@ function flag = setEVModel(LongTermPastData)
     
     %% Load data
     if strcmp(LongTermPastData, 'NULL') == 0    % if the filename is not null
-        train_data = csvread(LongTermPastData,1,0);
+        allPastData = csvread(LongTermPastData,1,0);
     else  % if the fine name is null
         flag = -1;  % return error
         return
@@ -33,46 +33,49 @@ function flag = setEVModel(LongTermPastData)
     col_P2 = 8; % P2(Holiday or not)
     col_energy = 9;
     col_soc = 10;
-    % Pick a predictor part
+    % Specify predictor part and target part
     colPredictors = [col_building:col_P2];
-    predictors = train_data(:,col_building:col_P2);
+    
+    %% Devide the data into training and validation
+    % Parameter
+    ValidDays = 30; % it must be above 1 day. 3days might provide the best performance
+    nValidData = 96*ValidDays; % 24*4*day   valid_data = longPast(end-n_valid_data+1:end, :); 
+    % divide all past data into training and validation
+    trainData = allPastData(1:end-nValidData, :);     % training Data (predictors + target)
+    validPredictorData = allPastData(end-nValidData+1:end, colPredictors);    % validation Data (predictors only)
+    validTargetEnergyData = allPastData(end-nValidData+1:end, col_energy); % trarget Data for validation (targets only)
+    validTargetSOCData = allPastData(end-nValidData+1:end, col_soc); % trarget Data for validation (targets only)
     
     %% Train each model using past load data
-    kmeansEV_Training(train_data, path);
-    neuralNetEV_Training(train_data, colPredictors, path); % Add NN here later
-
+    kmeansEV_Training(trainData, path);
+    neuralNetEV_Training(trainData, colPredictors, path);
+    %     LSTMEV_Training();    % add LSTM here later
+    
     %% Validate the performance of each model
     % Note: return shouldn't be located inside of structure. It should be sotred as matrix.
     %           This is because it makes problem after .m files is converted into java files 
-    [PredEnergyTrans_kmeans(:,1), PredSOC_kmeans(:,1)]  = kmeansEV_Forecast(predictors, path);
-    % Under construction ------------------------------------------------------------------------------
-    %     [PredEnergyTrans_Valid(1).data(:,1), PredSOC_Valid(1).data(:,1)] = NeuralNetwork_Forecast(predictors, path); 
-    % --------------------------------------------------------------------------------------------------------
-    PredEnergyTrans_Valid(1).data(:,1) =  PredEnergyTrans_kmeans(:,1);  
-    PredSOC_Valid(1).data(:,1) =  PredSOC_kmeans(:,1);
+    [validPredEnergyTransData(:,1), validPredSOCData(:,1)]  = kmeansEV_Forecast(validPredictorData, path);
+    [validPredEnergyTransData(:,2), validPredSOCData(:,2)] = neuralNetEV_Forecast(validPredictorData, path); 
+    %     [PredEnergyTrans_Valid(:,3), PredSOC_Valid(:,3)] = LSTMEV_Forecast(validData, path); % add LSTM here later
     
-    %% Optimize the coefficients for the additive model
-    % EnergyTrans(Charge/Discharge[kwh]) coefficients
-    coeff = pso_main(PredEnergyTrans_Valid, train_data(:,col_P2));
-    EnergyTransCoeff = coeff(1:end-1);
-    % SOC coefficients
-    coeff = pso_main(PredSOC_Valid, train_data(:,col_P2));
-    SOCCoeff = coeff(1:end-1);
-    
+    %% Optimize the coefficients (weights) for the ensembled forecasting model
+    weightEnergyTrans = getWeight(validPredictorData, validPredEnergyTransData, validTargetEnergyData);
+    weightSOC = getWeight(validPredictorData, validPredSOCData, validTargetSOCData);
+        
     %% Generate probability interval using validation result
-    for i = 1:size(EnergyTransCoeff,1)
+    % Generate forecasting result based on ensembled model
+    for i = 1:size(weightEnergyTrans,1)
         if i == 1
-            y_PredEnergyTrans = coeff(i).*PredEnergyTrans_Valid(i).data;
-            y_PredSOC = coeff(i).*PredSOC_Valid(i).data;
+            ensembledPredEnergyTrans = weightEnergyTrans(i).*validPredEnergyTransData(i,:);
+            ensembledPredSOC = weightSOC(i).*validPredSOCData(i, :);
         else
-            y_PredEnergyTrans = y_PredEnergyTrans + coeff(i).*PredEnergyTrans_Valid(i).data;
-            y_PredSOC = y_PredSOC + coeff(i).*PredSOC_Valid(i).data;  
+            ensembledPredEnergyTrans = ensembledPredEnergyTrans + weightEnergyTrans(i).*validPredEnergyTransData(i, :);
+            ensembledPredSOC = ensembledPredSOC + weightSOC(i).*validPredSOCData(i, :);  
         end
     end
-    
     % Calculate error from validation data: error[%]
-    EnergyTrans_err = [y_PredEnergyTrans - train_data(:, col_energy) predictors(:,col_hour) predictors(:,col_quarter)]; 
-    SOC_err = [y_PredSOC - train_data(:, col_soc) predictors(:,col_hour) predictors(:,col_quarter)];
+    EnergyTrans_err = [ensembledPredEnergyTrans - validTargetEnergyData validPredictorData(:,col_hour) validPredictorData(:,col_quarter)]; 
+    SOC_err = [ensembledPredSOC - validTargetSOCData validPredictorData(:,col_hour) validPredictorData(:,col_quarter)];
     % Get error distribution
     EnergyTransErrDist = getErrorDist(EnergyTrans_err);
     SOCErrDist = getErrorDist(SOC_err);
@@ -81,7 +84,7 @@ function flag = setEVModel(LongTermPastData)
     s1 = 'EVpsoCoeff_';
     s2 = 'EnergyTransErrDist_';
     s3 = 'SOCErrDist_';
-    s4 = num2str(train_data(1,1)); % Get building index to add to fine name
+    s4 = num2str(allPastData(1,1)); % Get building index to add to fine name
     name(1).string = strcat(s1,s4);
     name(2).string = strcat(s2,s4);
     name(3).string = strcat(s3,s4);
@@ -94,13 +97,10 @@ function flag = setEVModel(LongTermPastData)
         save(matname, varX(i).value);
     end
     
-%     % for debugging --------------------------------------------------------
-%         trueEnergyTrans = valid_data(:, end-1);
-%         trueSOC = valid_data(:, end);
-%         getGraph(1:size(valid_data,1), y_PredEnergyTrans, trueEnergyTrans, [], 'EnergyTrans'); % EnergyTrans
-%         getGraph(1:size(valid_data,1), y_PredSOC, trueSOC, [], 'SOC'); % SOC 
-%     % for debugging --------------------------------------------------------------------- 
+    % for debugging --------------------------------------------------------
+        getGraph(1:size(nValidData,1), ensembledPredEnergyTrans, validTargetEnergyData, [], 'EnergyTrans'); % EnergyTrans
+        getGraph(1:size(nValidData,1), ensembledPredSOC, validTargetSOCData, [], 'SOC'); % SOC 
+    % for debugging --------------------------------------------------------------------- 
     
-    flag = 1;    
     toc;
 end
