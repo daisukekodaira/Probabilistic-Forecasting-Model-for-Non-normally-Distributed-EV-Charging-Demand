@@ -12,18 +12,17 @@ function [predEnergyTrans, predSOC] = kmeansEV_Forecast(forecastData, path)
 %     end
 
     %% Read inpudata
-    building_num = num2str(forecastData(2,1)); % distribute with building number 
+    building_num = num2str(forecastData.BuildingIndex(1)); % distribute with building number 
     % Load mat files
     load_name = '\EV_trainedKmeans_';
     load_name = strcat(path,load_name,building_num,'.mat');
     load(load_name,'-mat');    
 
     %% Prediction based on the Naive Bayes classification model
-    % Energy Transition
-    TempArray = forecastData(~any(isnan(forecastData),2),:);         % Remove NaN from input dataset    
-    labelEnergyTrans = nb_EnergyTrans.predict(TempArray(:,2:end));  % Distribute class label using attribute "predict".
+    % Energy Transition, SOC
+    forecastData = table2array(forecastData);   % change table to array
+    labelEnergyTrans = nb_EnergyTrans.predict(forecastData);  % Distribute class label using attribute "predict".
     predEnergyTrans = c_EnergyTrans(labelEnergyTrans,:);    % Extract centroid as a predicted targe
-    % SOC
-    labelSOC = nb_SOC.predict(TempArray(:,2:end));
+    labelSOC = nb_SOC.predict(forecastData);
     predSOC = c_SOC(labelSOC,:);
 end

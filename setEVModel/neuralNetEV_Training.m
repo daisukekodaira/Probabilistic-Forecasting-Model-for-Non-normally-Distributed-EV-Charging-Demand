@@ -1,20 +1,15 @@
-function neuralNetEV_Training(LongTermpastData, colPredictors, path)
+function neuralNetEV_Training(trainData, colPredictors, path)
     % Display for user
     disp('Training the neraul network model....');
-    
-    %% PastData
-    trainData = LongTermpastData(1:(end-96*7),:);    % PastData load
-    
+       
     %% Train the model for Energy Transition
     % Training for Energy Trantision
-    colTarget = 9; % the column of Energy Transition
-    trainedNet_EnergyTrans = NeuralNet_train(trainData, colPredictors, colTarget);
     % Training for SOC
-    colTarget = 10; % the column of SOC
-    trainedNet_SOC = NeuralNet_train(trainData, colPredictors, colTarget);
+    trainedNet_EnergyTrans = NeuralNet_train(trainData, colPredictors, {'ChargeDischargeKwh'});
+    trainedNet_SOC = NeuralNet_train(trainData, colPredictors, 'SOCPercent');
     
     %% save result mat file
-    building_num = num2str(LongTermpastData(2,1));
+    building_num = num2str(trainData.BuildingIndex(1));
     save_name1 = '\EV_trainedNeuralNet_';
     save_fullPath = strcat(path,save_name1,building_num,'.mat');
     clearvars path;
@@ -31,8 +26,8 @@ function trainedNet = NeuralNet_train(trainData, columnPredictors, columnTarget)
     n_instance = size(trainData,1);        
     % Training
     for i = 1:maxLoop
-        x = transpose(trainData(1:n_instance, columnPredictors)); % input(feature)
-        t = transpose(trainData(1:n_instance, columnTarget)); % target
+        x = transpose(table2array(trainData(1:n_instance, columnPredictors))); % input(feature)
+        t = transpose(table2array(trainData(1:n_instance, columnTarget))); % target
         % Create and display the network
         net = fitnet([20,20,20,15],'trainscg');
         net.trainParam.showWindow = false;

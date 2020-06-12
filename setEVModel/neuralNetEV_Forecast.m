@@ -2,7 +2,7 @@ function [predEnergyTrans, predSOC] = neuralNetEV_Forecast(forecastData, path)
 
     %% Read Input data
     % get building number
-    building_num = num2str(forecastData(2,1));
+    building_num = num2str(forecastData.BuildingIndex(1));
     % load a '.mat' file
     load_name = '\EV_trainedNeuralNet_';
     load_name = strcat(path,load_name,building_num,'.mat');
@@ -10,6 +10,7 @@ function [predEnergyTrans, predSOC] = neuralNetEV_Forecast(forecastData, path)
 
     %% Forecast 
     % use ANN 3 times for reduce ANN's error
+    forecastData = table2array(forecastData);
     predEnergyTrans = getAverageOfMultipleForecast(trainedNet_EnergyTrans, forecastData);
     predSOC = getAverageOfMultipleForecast(trainedNet_SOC, forecastData);
 
@@ -18,10 +19,9 @@ end
 function forecastResultAverage = getAverageOfMultipleForecast(trainedNetAll, forecastData)
     % get the number of records in forecastData
     [time_steps, ~]= size(forecastData);
-
     % get how many multiple results will be taken average
     maxLoop = size(trainedNetAll,2);
-    
+    % Perform the multiple forecasting with trained network
     for i_loop = 1:maxLoop
         trainedNetInd = trainedNetAll{i_loop};
 %         forecastResultAll = zeros(time_steps,1);

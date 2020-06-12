@@ -49,7 +49,7 @@ function setEVModel(LongTermPastData)
     %     [PredEnergyTrans_Valid(:,3), PredSOC_Valid(:,3)] = LSTMEV_Forecast(validData, path); % add LSTM here later
     
     %% Optimize the coefficients (weights) for the ensembled forecasting model
-    weightEnergyTrans = getWeight(validPredictorData, validPredEnergyTransData, validTargetEnergyData);
+    weightEnergyTrans = getWeight(validPredictorData, validPredEnergyTransData, validTargetEnergyData); % table, matrix, table
     weightSOC = getWeight(validPredictorData, validPredSOCData, validTargetSOCData);
         
     %% Generate probability interval using validation result
