@@ -17,37 +17,27 @@ function setEVModel(LongTermPastData)
     
     %% Load data
     if strcmp(LongTermPastData, 'NULL') == 0    % if the filename is not null
-        allPastData = csvread(LongTermPastData,1,0);
+        TableAllPastData = readtable(LongTermPastData);
     else  % if the fine name is null
         flag = -1;  % return error
         return
-    end
-    % Specify each column for each label
-    col_building = 1;
-    col_year = 2;
-    col_month = 3;
-    col_day = 4;
-    col_hour = 5;
-    col_quarter = 6;
-    col_P1 = 7; % P1(Day in a week)
-    col_P2 = 8; % P2(Holiday or not)
-    col_energy = 9;
-    col_soc = 10;
-    % Specify predictor part and target part
-    colPredictors = [col_building:col_P2];
+    end 
     
     %% Devide the data into training and validation
     % Parameter
     ValidDays = 30; % it must be above 1 day. 3days might provide the best performance
     nValidData = 96*ValidDays; % 24*4*day   valid_data = longPast(end-n_valid_data+1:end, :); 
+    colPredictors = {'BuildingIndex', 'Year', 'Month', 'Day', 'Hour', 'Quarter', 'DayInWeek', 'HolidayOrNot'};
+    
+    
     % divide all past data into training and validation
-    trainData = allPastData(1:end-nValidData, :);     % training Data (predictors + target)
-    validPredictorData = allPastData(end-nValidData+1:end, colPredictors);    % validation Data (predictors only)
-    validTargetEnergyData = allPastData(end-nValidData+1:end, col_energy); % trarget Data for validation (targets only)
-    validTargetSOCData = allPastData(end-nValidData+1:end, col_soc); % trarget Data for validation (targets only)
+    trainData = TableAllPastData(1:end-nValidData, :);     % training Data (predictors + target)
+    validPredictorData = TableAllPastData(end-nValidData+1:end, colPredictors);    % validation Data (predictors only)
+    validTargetEnergyData = TableAllPastData(end-nValidData+1:end, {'ChargeDischargeKwh'}); % trarget Data for validation (targets only)
+    validTargetSOCData = TableAllPastData(end-nValidData+1:end, {'SOCPercent'}); % trarget Data for validation (targets only)
     
     %% Train each model using past load data
-    kmeansEV_Training(trainData, path);
+    kmeansEV_Training(trainData, colPredictors, path);
     neuralNetEV_Training(trainData, colPredictors, path);
     %     LSTMEV_Training();    % add LSTM here later
     
@@ -84,7 +74,7 @@ function setEVModel(LongTermPastData)
     s1 = 'EVpsoCoeff_';
     s2 = 'EnergyTransErrDist_';
     s3 = 'SOCErrDist_';
-    s4 = num2str(allPastData(1,1)); % Get building index to add to fine name
+    s4 = num2str(TableAllPastData(1,1)); % Get building index to add to fine name
     name(1).string = strcat(s1,s4);
     name(2).string = strcat(s2,s4);
     name(3).string = strcat(s3,s4);

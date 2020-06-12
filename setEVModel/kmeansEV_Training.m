@@ -1,8 +1,7 @@
-function kmeansEV_Training(LongTermpastData, path)
+function kmeansEV_Training(trainData, colPredictors, path)
 
     %% Read inpudata
-    train_data = LongTermpastData(~any(isnan(LongTermpastData),2),:); % Eliminate NaN from inputdata
-
+    %     train_data = LongTermpastData(~any(isnan(LongTermpastData),2),:); % Eliminate NaN from inputdata
     %     %% Format error check (to be modified)
     %     % "-1" if there is an error in the LongpastData's data form, or "1"
     %     [~,number_of_columns1] = size(train_data);
@@ -15,9 +14,9 @@ function kmeansEV_Training(LongTermpastData, path)
     %% Kmeans clustering for Charge/Discharge data
     % Extract appropriate data from inputdata for Energy transactions: pastEnegyTrans
     % Extract appropriate data from inputdata for SOC prediction: pastSOC
-    PastPredictors= train_data(:,2:8); % Extract predictors (Year,Month,Day,Hour,Quater,P1(Day),P2(Holiday))
-    pastEnegyTrans = train_data(:, 9); % Charge/Discharge [kwh]
-    pastSOC = train_data(:,10); % SOC[%]
+    PastPredictors= table2array(trainData(:, colPredictors)); % Extract predictors (Year,Month,Day,Hour,Quater,P1(Day),P2(Holiday))
+    pastEnegyTrans = table2array(trainData(:, {'ChargeDischargeKwh'})); % Charge/Discharge [kwh]
+    pastSOC = table2array(trainData(:, {'SOCPercent'})); % SOC[%]
 
     % Set K for Charge/Discharge [kwh]. 50 is experimentally chosen
     % Set K for SOC[%]. 35 is experimentally chosen
@@ -41,7 +40,7 @@ function kmeansEV_Training(LongTermpastData, path)
     % nb_SOC: Trained Baysian model for SOC[%]
     % c_EnergyTrans: centroid for each cluster. The number of these values must correspond with k_EnergyTrans
     % c_SOC: centroid for each cluster
-    building_num = num2str(LongTermpastData(2,1)); % building number is necessary to be distinguished from other builiding mat files
+    building_num = num2str(trainData.BuildingIndex(1)); % building number is necessary to be distinguished from other builiding mat files
     save_name = '\EV_trainedKmeans_';
     save_name = strcat(path,save_name,building_num,'.mat');
     save(save_name, 'idx_EnergyTrans','idx_SOC', 'k_EnergyTrans','k_SOC', 'nb_EnergyTrans','nb_SOC', 'c_EnergyTrans', 'c_SOC');
