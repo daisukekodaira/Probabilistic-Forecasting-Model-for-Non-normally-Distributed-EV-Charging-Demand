@@ -49,45 +49,33 @@ function setEVModel(LongTermPastData)
     %     [PredEnergyTrans_Valid(:,3), PredSOC_Valid(:,3)] = LSTMEV_Forecast(validData, path); % add LSTM here later
     
     %% Optimize the coefficients (weights) for the ensembled forecasting model
-    weightEnergy = getWeight(validData.Predictor, validData.PredEnergy, validData.TargetEnergy);
-    weightSOC = getWeight(validData.Predictor, validData.PredSOC, validData.TargetSOC);
+    weight.Energy = getWeight(validData.Predictor, validData.PredEnergy, validData.TargetEnergy);
+    weight.SOC = getWeight(validData.Predictor, validData.PredSOC, validData.TargetSOC);
         
     %% Generate probability interval using validation result
     % Generate forecasting result based on ensembled model
     steps = size(validData.Predictor, 1);
     for i = 1:steps
         hour = validData.Predictor.Hour(i)+1;       % Transpose 'hours' from 0 to 23 -> from 1 to 24
-        ensembledPredEnergy(i,:) = sum(weightEnergy(hour, :).*validData.PredEnergy(i,:));
-        ensembledPredSOC(i,:) = sum(weightSOC(hour, :).*validData.PredSOC(i, :));
+        ensembledPredEnergy(i,:) = sum(weight.Energy(hour, :).*validData.PredEnergy(i,:));
+        ensembledPredSOC(i,:) = sum(weight.SOC(hour, :).*validData.PredSOC(i, :));
     end
     % Calculate error from validation data: error[%]
     validData.ErrEnergy = ensembledPredEnergy - validData.TargetEnergy;
     validData.ErrSOC = ensembledPredSOC - validData.TargetSOC;
                        
     % Get error distribution
-    validData.ErrDist.Energy = getErrorDist(validData, validData.ErrEnergy);
-    validData.ErrDist.SOC = getErrorDist(validData, validData.ErrSOC);
+    ErrDist.Energy = getErrorDist(validData, validData.ErrEnergy);
+    ErrDist.SOC = getErrorDist(validData, validData.ErrSOC);
         
     %% Save .mat files
-    ErrDistEnergy = {validData.ErrDist.Energy};
-    ErrDistSOC = {validData.ErrDist.SOC};
-    s1 = 'weightEnergy_';
-    s2 = 'weightSOC_';
-    s3 = 'EnergyErrDist_';
-    s4 = 'SOCErrDist_';
-    s5 = num2str(TableAllPastData.BuildingIndex(1)); % Get building index to add to fine name
-    name(1).string = strcat(s1,s5);
-    name(2).string = strcat(s2,s5);
-    name(3).string = strcat(s3,s5);
-    name(4).string = strcat(s4,s5);
-    varX(1).value = 'weightEnergy';
-    varX(2).value = 'weightSOC';
-    varX(3).value = 'ErrDistEnergy';
-    varX(4).value = 'ErrDistSOC';
-    extention='.mat';
+    filename = {'weight_'; 'ErrDist_'};
+    Bnumber = num2str(TableAllPastData.BuildingIndex(1)); % Get building index to add to fine name
+    varX = {'weight'; 'ErrDist'};
     for i = 1:size(varX,2)
-        matname = fullfile(path, [name(i).string extention]);
-        save(matname, varX(i).value);
+        name = stract(filename(i), Bnumber);
+        matname = fullfile(path, [name '.mat']);
+        save(matname, char(varX(i)));
     end
     
 %     % for debugging --------------------------------------------------------
