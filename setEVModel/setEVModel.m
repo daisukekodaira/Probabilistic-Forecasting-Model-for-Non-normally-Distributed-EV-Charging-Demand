@@ -91,6 +91,7 @@ function setEVModel(LongTermPastData)
     end
     
 %     % for debugging --------------------------------------------------------
+%     % Under construction 2020 June 16th
 %         display_result(1:size(nValidData,1), ensembledPredEnergy, validData.TargetEnergy, [], 'EnergyTrans'); % EnergyTrans
 %         display_result(1:size(nValidData,1), ensembledPredSOC, validData.TargetSOC, [], 'SOC'); % SOC 
 %     % for debugging --------------------------------------------------------------------- 
