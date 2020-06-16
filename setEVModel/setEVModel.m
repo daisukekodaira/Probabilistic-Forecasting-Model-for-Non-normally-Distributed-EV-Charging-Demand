@@ -32,9 +32,9 @@ function setEVModel(LongTermPastData)
     
     % divide all past data into training and validation
     trainData = TableAllPastData(1:end-nValidData, :);     % training Data (predictors + target)
-    validPredictorData = TableAllPastData(end-nValidData+1:end, colPredictors);    % validation Data (predictors only)
-    validTargetEnergyData = TableAllPastData(end-nValidData+1:end, {'ChargeDischargeKwh'}); % trarget Data for validation (targets only)
-    validTargetSOCData = TableAllPastData(end-nValidData+1:end, {'SOCPercent'}); % trarget Data for validation (targets only)
+    validData.Predictor = TableAllPastData(end-nValidData+1:end, colPredictors);    % validation Data (predictors only)
+    validData.TargetEnergy = table2array(TableAllPastData(end-nValidData+1:end, {'ChargeDischargeKwh'})); % trarget Data for validation (targets only)
+    validData.TargetSOC = table2array(TableAllPastData(end-nValidData+1:end, {'SOCPercent'})); % trarget Data for validation (targets only)
     
     %% Train each model using past load data
     kmeansEV_Training(trainData, colPredictors, path);
@@ -44,53 +44,56 @@ function setEVModel(LongTermPastData)
     %% Validate the performance of each model
     % Note: return shouldn't be located inside of structure. It should be sotred as matrix.
     %           This is because it makes problem after .m files is converted into java files 
-    [validPredEnergyTransData(:,1), validPredSOCData(:,1)]  = kmeansEV_Forecast(validPredictorData, path);
-    [validPredEnergyTransData(:,2), validPredSOCData(:,2)] = neuralNetEV_Forecast(validPredictorData, path); 
+    [validData.PredEnergy(:,1), validData.PredSOC(:,1)]  = kmeansEV_Forecast(validData.Predictor, path);
+    [validData.PredEnergy(:,2), validData.PredSOC(:,2)] = neuralNetEV_Forecast(validData.Predictor, path); 
     %     [PredEnergyTrans_Valid(:,3), PredSOC_Valid(:,3)] = LSTMEV_Forecast(validData, path); % add LSTM here later
     
     %% Optimize the coefficients (weights) for the ensembled forecasting model
-    weightEnergyTrans = getWeight(validPredictorData, validPredEnergyTransData, validTargetEnergyData); % table, matrix, table
-    weightSOC = getWeight(validPredictorData, validPredSOCData, validTargetSOCData);
+    weightEnergy = getWeight(validData.Predictor, validData.PredEnergy, validData.TargetEnergy);
+    weightSOC = getWeight(validData.Predictor, validData.PredSOC, validData.TargetSOC);
         
     %% Generate probability interval using validation result
     % Generate forecasting result based on ensembled model
-    for i = 1:size(weightEnergyTrans,1)
-        if i == 1
-            ensembledPredEnergyTrans = weightEnergyTrans(i).*validPredEnergyTransData(i,:);
-            ensembledPredSOC = weightSOC(i).*validPredSOCData(i, :);
-        else
-            ensembledPredEnergyTrans = ensembledPredEnergyTrans + weightEnergyTrans(i).*validPredEnergyTransData(i, :);
-            ensembledPredSOC = ensembledPredSOC + weightSOC(i).*validPredSOCData(i, :);  
-        end
+    steps = size(validData.Predictor, 1);
+    for i = 1:steps
+        hour = validData.Predictor.Hour(i)+1;       % Transpose 'hours' from 0 to 23 -> from 1 to 24
+        ensembledPredEnergy(i,:) = sum(weightEnergy(hour, :).*validData.PredEnergy(i,:));
+        ensembledPredSOC(i,:) = sum(weightSOC(hour, :).*validData.PredSOC(i, :));
     end
     % Calculate error from validation data: error[%]
-    EnergyTrans_err = [ensembledPredEnergyTrans - validTargetEnergyData validPredictorData(:,col_hour) validPredictorData(:,col_quarter)]; 
-    SOC_err = [ensembledPredSOC - validTargetSOCData validPredictorData(:,col_hour) validPredictorData(:,col_quarter)];
+    validData.ErrEnergy = ensembledPredEnergy - validData.TargetEnergy;
+    validData.ErrSOC = ensembledPredSOC - validData.TargetSOC;
+                       
     % Get error distribution
-    EnergyTransErrDist = getErrorDist(EnergyTrans_err);
-    SOCErrDist = getErrorDist(SOC_err);
+    validData.ErrDist.Energy = getErrorDist(validData, validData.ErrEnergy);
+    validData.ErrDist.SOC = getErrorDist(validData, validData.ErrSOC);
         
     %% Save .mat files
-    s1 = 'EVpsoCoeff_';
-    s2 = 'EnergyTransErrDist_';
-    s3 = 'SOCErrDist_';
-    s4 = num2str(TableAllPastData(1,1)); % Get building index to add to fine name
-    name(1).string = strcat(s1,s4);
-    name(2).string = strcat(s2,s4);
-    name(3).string = strcat(s3,s4);
-    varX(1).value = 'coeff';
-    varX(2).value = 'EnergyTransErrDist';
-    varX(3).value = 'SOCErrDist';
+    ErrDistEnergy = {validData.ErrDist.Energy};
+    ErrDistSOC = {validData.ErrDist.SOC};
+    s1 = 'weightEnergy_';
+    s2 = 'weightSOC_';
+    s3 = 'EnergyErrDist_';
+    s4 = 'SOCErrDist_';
+    s5 = num2str(TableAllPastData.BuildingIndex(1)); % Get building index to add to fine name
+    name(1).string = strcat(s1,s5);
+    name(2).string = strcat(s2,s5);
+    name(3).string = strcat(s3,s5);
+    name(4).string = strcat(s4,s5);
+    varX(1).value = 'weightEnergy';
+    varX(2).value = 'weightSOC';
+    varX(3).value = 'ErrDistEnergy';
+    varX(4).value = 'ErrDistSOC';
     extention='.mat';
     for i = 1:size(varX,2)
         matname = fullfile(path, [name(i).string extention]);
         save(matname, varX(i).value);
     end
     
-    % for debugging --------------------------------------------------------
-        getGraph(1:size(nValidData,1), ensembledPredEnergyTrans, validTargetEnergyData, [], 'EnergyTrans'); % EnergyTrans
-        getGraph(1:size(nValidData,1), ensembledPredSOC, validTargetSOCData, [], 'SOC'); % SOC 
-    % for debugging --------------------------------------------------------------------- 
+%     % for debugging --------------------------------------------------------
+%         display_result(1:size(nValidData,1), ensembledPredEnergy, validData.TargetEnergy, [], 'EnergyTrans'); % EnergyTrans
+%         display_result(1:size(nValidData,1), ensembledPredSOC, validData.TargetSOC, [], 'SOC'); % SOC 
+%     % for debugging --------------------------------------------------------------------- 
     
     toc;
 end

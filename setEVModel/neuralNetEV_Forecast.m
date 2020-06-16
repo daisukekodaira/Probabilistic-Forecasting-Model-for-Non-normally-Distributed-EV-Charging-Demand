@@ -1,5 +1,9 @@
 function [predEnergyTrans, predSOC] = neuralNetEV_Forecast(forecastData, path)
 
+    % Display for user
+    disp('Validating the Neural Network model....');
+
+
     %% Read Input data
     % get building number
     building_num = num2str(forecastData.BuildingIndex(1));
@@ -13,6 +17,9 @@ function [predEnergyTrans, predSOC] = neuralNetEV_Forecast(forecastData, path)
     forecastData = table2array(forecastData);
     predEnergyTrans = getAverageOfMultipleForecast(trainedNet_EnergyTrans, forecastData);
     predSOC = getAverageOfMultipleForecast(trainedNet_SOC, forecastData);
+    
+    % Display for user    
+    disp('Validating the Neural Network model.... Done!');
 
 end
 
@@ -24,7 +31,6 @@ function forecastResultAverage = getAverageOfMultipleForecast(trainedNetAll, for
     % Perform the multiple forecasting with trained network
     for i_loop = 1:maxLoop
         trainedNetInd = trainedNetAll{i_loop};
-%         forecastResultAll = zeros(time_steps,1);
         for i = 1:time_steps
                 forecastResultIndvidual(i,:) = trainedNetInd(transpose(forecastData(i, :)));
         end
