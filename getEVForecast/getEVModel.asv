@@ -76,6 +76,7 @@ function flag = getEVModel(shortTermPastData, forecastData, resultFilePath)
             predData.EnsembleEnergy(hour,) = weightEnergy.*predData.Energy(i, :);
             predData.SOC(hour,) = weightSOC.*predData.SOC(i, :);
         else
+            lastStep = size(predData.)
             predData.EnsembleEnergy(hour,) = weightEnergy.*predData.Energy(i, :);
             predData.SOC(hour,) = weightSOC.*predData.SOC(i, :);
         

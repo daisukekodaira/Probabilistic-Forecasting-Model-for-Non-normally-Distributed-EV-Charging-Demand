@@ -18,11 +18,11 @@ function weight = getWeight(predictors, forecasted, target)
     
     for i = 1:steps
         if isnan(data(predictors.Hour(i)+1).forecast)
-            % data is not stored yet for the hour
+            % there is no stored data yet
             data(predictors.Hour(i)+1).forecast(1, :) = forecasted(i, :);
             data(predictors.Hour(i)+1).target(1) = target(i);
         else
-            % there is stored
+            % there is data
             lastStep = size(data(predictors.Hour(i)+1).forecast,1);
             data(predictors.Hour(i)+1).forecast(lastStep+1, :) = forecasted(i, :);
             data(predictors.Hour(i)+1).target(lastStep+1, 1) = target(i);

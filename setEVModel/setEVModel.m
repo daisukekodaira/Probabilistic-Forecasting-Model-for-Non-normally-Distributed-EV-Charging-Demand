@@ -65,17 +65,17 @@ function setEVModel(LongTermPastData)
     validData.ErrSOC = ensembledPredSOC - validData.TargetSOC;
                        
     % Get error distribution
-    ErrDist.Energy = getErrorDist(validData, validData.ErrEnergy);
-    ErrDist.SOC = getErrorDist(validData, validData.ErrSOC);
+    errDist.Energy = getErrorDist(validData, validData.ErrEnergy);
+    errDist.SOC = getErrorDist(validData, validData.ErrSOC);
         
     %% Save .mat files
-    filename = {'weight_'; 'ErrDist_'};
+    filename = {'EV_weight_'; 'EV_errDist_'};
     Bnumber = num2str(TableAllPastData.BuildingIndex(1)); % Get building index to add to fine name
-    varX = {'weight'; 'ErrDist'};
-    for i = 1:size(varX,2)
-        name = stract(filename(i), Bnumber);
-        matname = fullfile(path, [name '.mat']);
-        save(matname, char(varX(i)));
+    varX = {'weight'; 'errDist'};
+    for i = 1:size(varX,1)
+        name = strcat(filename(i), Bnumber, '.mat');
+        matname = fullfile(path, name);
+        save(char(matname), char(varX(i)));
     end
     
 %     % for debugging --------------------------------------------------------
