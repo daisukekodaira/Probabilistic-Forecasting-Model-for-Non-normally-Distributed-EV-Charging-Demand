@@ -1,13 +1,13 @@
 % ---------------------------------------------------------------------------
 % EV prediction: Foecasting algorithm 
-% 6th March,2019 Updated by Daisuke Kodaira 
+% June 17th, 2020 Updated by Daisuke Kodaira 
 % Contact: daisuke.kodaira03@gmail.com
 %
 % function flag = demandForecast(shortTermPastData, ForecastData, ResultData)
 %     flag =1 ; if operation is completed successfully
 %     flag = -1; if operation fails.
-%     This function depends on demandModel.mat. If these files are not found return -1.
-%     The output of the function is "ResultData.csv"
+%     This function depends on '.mat' files. If these files are not found return -1.
+%     The output of the function is "resultEVData.csv"
 % ----------------------------------------------------------------------------
 
 function flag = getEVModel(shortTermPastData, forecastData, resultFilePath)
@@ -17,7 +17,7 @@ function flag = getEVModel(shortTermPastData, forecastData, resultFilePath)
     if (strcmp(shortTermPastData, 'NULL') == 0) && (strcmp(forecastData, 'NULL') == 0)
         % if the filename is exsit
         shortTerm = readtable(shortTermPastData);
-        predData.predictors = readtable(forecastData);
+        predictorTable = readtable(forecastData);
     else
         % if the file name doesn't exsit
         flag = -1;  % return error
@@ -58,57 +58,38 @@ function flag = getEVModel(shortTermPastData, forecastData, resultFilePath)
     % Two methods are combined
     %   1. k-menas
     %   2. Neural network
-    [predData.IndEnergy(:,1), predData.IndSOC(:,1)]  = kmeansEV_Forecast(predData.predictors, path);
-    [predData.IndEnergy(:,2), predData.IndSOC(:,2)] = neuralNetEV_Forecast(predData.predictors, path);  
+    [predData.IndEnergy(:,1), predData.IndSOC(:,1)]  = kmeansEV_Forecast(predictorTable, path);
+    [predData.IndEnergy(:,2), predData.IndSOC(:,2)] = neuralNetEV_Forecast(predictorTable, path);  
     
     %% Get combined prediction result with weight for each algorithm
-    records = size(predData.Energy, 1);
-    
     % Prepare the tables to store the deterministic forecasted result (ensemble forecasted result)
     % Note: the forecasted results are stored in an hourly basis
-    predData.EnsembleEnergy = nan(1:24, 1);
-    predData.EnsembleSOC = nan(1:24, 1);
-
+    predData.EnsembleEnergy = NaN(size(predictorTable, 1), 1);            
+    predData.EnsembleSOC = NaN(size(predictorTable, 1), 1);            
+    
+    records = size(predData.IndEnergy, 1);
+    % generate ensemble forecasted result
     for i = 1:records
-        hour = predData.predictors.Hour(i)+1;   % transpose Hour from 0~23 to 1~24
-        if isnan(predData.EnsembleEnergy(hour,1))
-            % the data is not stored for the hour yet
-            predData.EnsembleEnergy(hour,) = weightEnergy.*predData.Energy(i, :);
-            predData.SOC(hour,) = weightSOC.*predData.SOC(i, :);
-        else
-            predData.EnsembleEnergy(hour,) = weightEnergy.*predData.Energy(i, :);
-            predData.SOC(hour,) = weightSOC.*predData.SOC(i, :);
-        
-            DetermPredSOC = weightSOC.*predSOC;
-        end
+        hour =predictorTable.Hour(i)+1;   % transpose Hour from 0~23 to 1~24
+        predData.EnsembleEnergy(i) = sum(weight.Energy(hour,:).*predData.IndEnergy(i, :));
+        predData.EnsembleSOC(i) = sum(weight.SOC(hour,:).*predData.IndSOC(i, :));
     end
-    %% Generate Result file
-    % Headers for output file
-    hedder = {'BuildingIndex', 'Year', 'Month', 'Day', 'Hour', 'Quarter', 'SOC_Mean', 'SOC_PImin', 'SOC_PIMax', ...
-                      'EVDemandmean', 'EVDemandPImin', 'EVDemandPImax', 'Confidence Level'};
-    fid = fopen(resultFilePath,'wt');
-    fprintf(fid,'%s,',hedder{:});
-    fprintf(fid,'\n');
-    
     % Get Prediction Interval 
-    % Input: 
-    %   1. Deterministic forecasting result
-    %   2. Predictors
-    %   3. Err distribution (24*4 matrix)
-    [EnergyTransPImean, EnergyTransPImin, EnergyTransPImax] = getPI(DetermPredEnergy, predictors, errDist.Energy);
-    [SOCPImean, SOCPImin, SOCPImax] = getPI(DetermPredSOC, predictors, errDist.SOC);
-    
-    result = [predictors(:,1:6)  SOCPImean SOCPImin SOCPImax EnergyTransPImean EnergyTransPImin EnergyTransPImax... 
-                   100*(1-ci_percentage)*ones(size(DetermPredEnergy,1),1)];
-    fprintf(fid,['%d,', '%04d,', '%02d,', '%02d,', '%2d,','%1d,', '%f,', '%f,', '%f,', '%f,', '%f,', '%f,','%d', '\n'], result');
-    fclose(fid);
+    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(predictorTable, predData.EnsembleEnergy, errDist.Energy);
+    [predData.SOCPImean, predData.SOCPImin, predData.SOCPImax] = getPI(predictorTable, predData.EnsembleSOC, errDist.SOC);
+
+    %% Write  down the forecasted result in csv file
+    outTable = [predictorTable, struct2table(predData)];
+    writetable(outTable, resultFilePath, 'Delimiter', ',');
     
     % for debugging --------------------------------------------------------
-    EnergyTransPI =  [EnergyTransPImin, EnergyTransPImax];
-    SOCPI =  [SOCPImin, SOCPImax];
-    observed = csvread('TargetEVData.csv',1,0);
-    display_result('EnergyTrans', EnergyTransPI, num_instances, DetermPredEnergy, observed(:,9), ci_percentage);
-    display_result('SOC', SOCPI, num_instances, DetermPredSOC, observed(:,10), ci_percentage);
+    energyTransPI =  [predData.EnergyPImin, predData.EnergyPImax];
+    socPI =  [predData.SOCPImin, predData.SOCPImax];
+    observed = table2array(readtable('targetEVData.csv'));
+    display_result('EV charge (ensembled)', 'Demand [kwh]', energyTransPI, predData.EnsembleEnergy, observed(:,9), ci_percentage);
+    display_result('EV charge (k-means)', 'Demand [kwh]',[], predData.IndEnergy(:,1), observed(:,9), ci_percentage);
+    display_result('EV charge (neural net)', 'Demand [kwh]',[], predData.IndEnergy(:,2), observed(:,9), ci_percentage);
+%     display_result('SOC (ensembled)', 'SOC [%]', socPI, predData.EnsembleSOC, observed(:,10), ci_percentage);
     % for debugging --------------------------------------------------------------------- 
     
     flag = 1;

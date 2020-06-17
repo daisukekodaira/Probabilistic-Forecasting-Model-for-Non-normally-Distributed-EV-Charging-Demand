@@ -43,22 +43,18 @@ function weight = getWeight(predictors, forecasted, target)
                                               'Display', 'none');
         [weight(hour, :),~,~,~] = particleswarm(objFunc,nvars,lb,ub, options);
     end
+    
     % Display for user
     disp('Optimizing the weight for ensemble model.... Done!');
-
 end
 
 
 function err = objectiveFunc(weight, forecast, target)
     % Note: 
-    % Here, 'forecast' and 'target' stores the classified focasted data such as Hour = 10
-    % 'weight' also to be defined with hourly basis, so we will define 24 'weight' for every hour data.
-    
+    %   - Here, 'forecast' and 'target' stores the classified focasted data such as Hour = 10
+    %   - 'weight' also to be defined with hourly basis, so we will define 24 'weight' for every hour data.
     % objective function
     ensembleForecasted = sum(forecast.*weight, 2);  % add two methods
     err = sum(abs(target - ensembleForecasted));
     %     err = max(abs(target - ensembleForecasted));
-    
-    
-
 end

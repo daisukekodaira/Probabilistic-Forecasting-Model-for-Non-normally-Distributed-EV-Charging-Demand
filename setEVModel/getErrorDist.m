@@ -20,13 +20,14 @@ function err_dist = getErrorDist(validData, err)
     % 'err' always require +1 to match the hour/quater with the column and row in 'err'    
     for i = 1:steps
         currentHour = validData.Predictor.Hour(i)+1;
-        if isnan(err_dist(currentHour).err(1))
+        currentQuarter = validData.Predictor.Quarter(i)+1;
+        if isnan(err_dist(currentHour, currentQuarter).err(1)) 
             % if the err_distribution is NaN -> yes -> put the error as a new element
-            err_dist(currentHour).err(1, :) = err(i);
+            err_dist(currentHour, currentQuarter).err(1, :) = err(i);
         else
             % if the err_distribution is NaN -> no -> append the new error to the last element. 
-            lastStep = size(err_dist(currentHour).err,1);
-            err_dist(currentHour).err(lastStep+1, :) = err(i);
+            lastStep = size(err_dist(currentHour, currentQuarter).err,1);
+            err_dist(currentHour, currentQuarter).err(lastStep+1, :) = err(i);
         end
     end
 end
