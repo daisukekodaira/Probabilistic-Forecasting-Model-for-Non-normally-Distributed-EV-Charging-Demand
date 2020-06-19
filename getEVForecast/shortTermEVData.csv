@@ -1,4 +1,4 @@
-BuildingIndex,Year,Month,Day,Hour,Quarter,P1(Day in a week),P2(Holiday or not),Charge/Discharge[kwh],SOC [%]
+BuildingIndex,Year,Month,Day,Hour,Quarter,P1(DayInWeek),P2(HolidayOrNot),Charge/Discharge[kwh],SOC[%]
 1,2018,8,24,0,0,0,0,2.864957,0
 1,2018,8,24,0,1,0,0,2.864957,0
 1,2018,8,24,0,2,0,0,4.001321,0

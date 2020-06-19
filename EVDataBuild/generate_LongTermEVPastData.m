@@ -7,7 +7,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function generate_LongTermEVPastData(inputFileName, outputFileName)
-
+    tic;
+    
     %% Read and format input data    
     T = readtable(inputFileName,'Format','%d %s %d %d %{dd/MM/yyyy}D %{HH:mm}D %{dd/MM/yyyy}D %{HH:mm}D %f %f %s %s %s');
     % Convert charactor to the number for the k-means and NN
@@ -137,4 +138,15 @@ function generate_LongTermEVPastData(inputFileName, outputFileName)
     % Write data
     fprintf(fid,['%d,', '%4d,', '%02d,', '%02d,', '%02d,', '%d,', '%d,', '%d,', '%f,', '%f,' '\n'], output_matrix');
     fclose(fid);
+    
+    % Show the longTermData as an graph
+    plot(output_matrix(:,9));
+    
+    
+    
+    
+    toc;
+    
+    
+    
 end

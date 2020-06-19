@@ -10,7 +10,7 @@
 %     The output of the function is "resultEVData.csv"
 % ----------------------------------------------------------------------------
 
-function flag = getEVModel(shortTermPastData, forecastData, resultFilePath)
+function flag = getEVModel_OneDay(shortTermPastData, forecastData, resultFilePath)
     tic;
     
     %% Error check and Load input datathe 

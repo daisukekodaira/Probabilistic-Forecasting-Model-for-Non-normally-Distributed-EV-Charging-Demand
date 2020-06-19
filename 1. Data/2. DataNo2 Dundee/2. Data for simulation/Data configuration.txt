@@ -4,9 +4,13 @@ Target       2018/9/1 - 2018/9/8
 Forecast    2018/9/1 - 2018/9/8
 ShortTerm 2018/8/24 - 2018/8/31
 LongTerm 2017/9/1 - 2018/8/31
-
 all past data 2017/9/1 - 2018/9/8
 
 Note:
 - Eliminate "," from Site column
 - Erase the space in the header
+
+■all past data modified
+allPastEVData 2017/9/1 - 2018/9/6
+  Note: the data from 2018/9/7 to 2018/9/8 seems to be weired. Trimmed.
+

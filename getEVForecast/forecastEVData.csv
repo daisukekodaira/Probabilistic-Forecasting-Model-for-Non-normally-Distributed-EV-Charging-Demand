@@ -1,4 +1,4 @@
-BuildingIndex,Year,Month,Day,Hour,Quarter,P1(Day),P2(Holiday)
+BuildingIndex,Year,Month,Day,Hour,Quarter,P1(DayInWeek),P2(HolidayOrNot)
 1,2018,9,1,0,0,0,0
 1,2018,9,1,0,1,0,0
 1,2018,9,1,0,2,0,0
