@@ -1,8 +1,6 @@
 function [predEnergyTrans, predSOC] = neuralNetEV_Forecast(forecastData, path)
-
     % Display for user
     disp('Validating the Neural Network model....');
-
 
     %% Read Input data
     % get building number
@@ -37,7 +35,7 @@ function forecastResultAverage = getAverageOfMultipleForecast(trainedNetAll, for
         forecastResultAll(:,i_loop) = forecastResultIndvidual;
     end
     % Take average and erase the minus value
-    forecastResultAverage = max( sum(forecastResultAll, 2)./maxLoop, 0);
+    forecastResultAverage = max(sum(forecastResultAll, 2)./maxLoop, 0);
     
     %% Error correction
     % To be implemented ------------------------------------------------------------------------------------------------
