@@ -23,8 +23,8 @@ function kmeansEV_Training(trainData, colPredictors, path)
 
     % Set K for Charge/Discharge [kwh]. 50 is experimentally chosen
     % Set K for SOC[%]. 35 is experimentally chosen
-    k_EnergyTrans= 2;
-    k_SOC = 1;
+    k_EnergyTrans= 50;
+    k_SOC = 35;
     
     % Train k-means clustering
     [idx_EnergyTrans, c_EnergyTrans] = kmeans(pastEnegyTrans, k_EnergyTrans);

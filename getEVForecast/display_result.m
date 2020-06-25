@@ -2,9 +2,9 @@
 % This function is only for debug
 % -------------------------------------------------------------------
 
-function display_result(figTitle, yLabel, PI, determPred, observed, alph)
+function [PICoverRate, MAPE] = display_result(figTitle, yLabel, PI, determPred, observed, alph)
     instances = size(determPred,1);
-    graph_desc(1:instances, yLabel, determPred, observed, PI, figTitle, alph);
+%     graph_desc(1:instances, yLabel, determPred, observed, PI, figTitle, alph);
 
     % Calculate and display cover rate of PI
     if isempty(PI) == 0
@@ -16,14 +16,15 @@ function display_result(figTitle, yLabel, PI, determPred, observed, alph)
             end
         end
         PICoverRate = 100*count/size(observed,1);
-        disp([figTitle, 'PI cover rate is ',num2str(PICoverRate), '[%]/', num2str(100*(1-alph)), '[%]'])
+%         disp([figTitle, 'PI cover rate is ',num2str(PICoverRate), '[%]/', num2str(100*(1-alph)), '[%]'])
     else
         % we don't have PIs to be described
+        PICoverRate = [];
     end
         
     % MAPE 
     MAPE = mean(abs(determPred - observed)*100./observed); % combined
-    disp([figTitle, 'MAPE of mean: ', num2str(MAPE), '[%]'])
+%     disp([figTitle, 'MAPE of mean: ', num2str(MAPE), '[%]'])
 end
 
 
