@@ -10,7 +10,7 @@
 %     The output of the function is "resultEVData.csv"
 % ----------------------------------------------------------------------------
 
-function [PICoverRate, MAPE, RMSE, outTable] = getEVModel_MultipleDay(shortTermTable, predictorTable, targetTable)  
+function [PICoverRate, MAPE, outTable] = getEVModel_MultipleDay(shortTermTable, predictorTable, targetTable)  
     % parameters
     buildingIndex = shortTermTable.BuildingIndex(1);
     ci_percentage = 0.05; % 0.05 = 95% it must be between 0 to 1
@@ -64,17 +64,13 @@ function [PICoverRate, MAPE, RMSE, outTable] = getEVModel_MultipleDay(shortTermT
 
     %% Write  down the forecasted result in csv file
     outTable = [predictorTable, struct2table(predData), targetTable];
-
-    %% Get forecast performance summary
+    
+    % for debugging --------------------------------------------------------
     energyTransPI =  [predData.EnergyPImin, predData.EnergyPImax];
     socPI =  [predData.SOCPImin, predData.SOCPImax];
-    % Energy demand (ensembled)
-    [PICoverRate.ensemble, MAPE.ensemble, RMSE.ensemble] = getDailyPerformance(energyTransPI, predData.EnsembleEnergy, targetTable.EnergyDemand);
-    % Energy emand (k-means)
-    [~, MAPE.kmeans, RMSE.kmeans] = getDailyPerformance([], predData.IndEnergy(:,1), targetTable.EnergyDemand);
-    % Energy demand (Neural Network)
-    [~, MAPE.neuralNet, RMSE.neuralNet] = getDailyPerformance([], predData.IndEnergy(:,2), targetTable.EnergyDemand);
-    % SOC   
-    %     [PICoverRate.ensemble, MAPE.ensemble] = getDailyPerformance(socPI, predData.EnsembleEnergy, targetTable.EnergyDemand, ci_percentage);
-    
+    [PICoverRate.ensemble, MAPE.ensemble] = getDailyPerformance('EV charge (ensembled)',  energyTransPI, predData.EnsembleEnergy, targetTable.EnergyDemand, ci_percentage);
+    [~, MAPE.kmeans] = getDailyPerformance('EV charge (k-means)', 'Demand [kwh]',[], predData.IndEnergy(:,1), targetTable.EnergyDemand, ci_percentage);
+    [~, MAPE.neuralNet] = getDailyPerformance('EV charge (neural net)', 'Demand [kwh]',[], predData.IndEnergy(:,2), targetTable.EnergyDemand, ci_percentage);
+%     display_result('SOC (ensembled)', 'SOC [%]', socPI, predData.EnsembleSOC, observed(:,10), ci_percentage);
+    % for debugging --------------------------------------------------------------------- 
 end
