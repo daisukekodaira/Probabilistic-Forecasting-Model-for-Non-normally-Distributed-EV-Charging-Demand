@@ -36,7 +36,7 @@ for i = 1:days
     % Store the forecast result
     resultSummary.PIcoverRate(i, 1) = PICoverRate.ensemble;
     resultSummary.MAPE(i, 1) = MAPE.ensemble;
-    resultSummary.RMSE(i, 1) = MAPE.ensemble;
+    resultSummary.RMSE(i, 1) = RMSE.ensemble;
     % get the date to be forecasted. It properly works in case the
     % forecasting is only for whole 1 day.
     resultSummary.date(i,1) = datetime(forecastTable.Year(1), forecastTable.Month(1), forecastTable.Day(1));
