@@ -28,8 +28,7 @@ function setEVModel(LongTermPastData)
     ValidDays = 30; % it must be above 1 day. 3days might provide the best performance
     nValidData = 96*ValidDays; % 24*4*day   valid_data = longPast(end-n_valid_data+1:end, :); 
     colPredictors = {'BuildingIndex', 'Year', 'Month', 'Day', 'Hour', 'Quarter', 'DayInWeek', 'HolidayOrNot'};
-    
-    
+        
     % divide all past data into training and validation
     trainData = TableAllPastData(1:end-nValidData, :);     % training Data (predictors + target)
     validData.Predictor = TableAllPastData(end-nValidData+1:end, colPredictors);    % validation Data (predictors only)
