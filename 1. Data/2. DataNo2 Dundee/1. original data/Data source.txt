@@ -1,2 +1,14 @@
 Data is downloaded here [avaiable on 24th March 2020]
 https://data.dundeecity.gov.uk/dataset/ev-charging-data
+
+
+Electric Vehicle Charging Sessions Dundee
+Every electric vehicle charging session at Dundee City Council owned charge points. 
+Data includes:
+ - Start and finish date/time, 
+ - Kwh (amount of electricity) used, 
+ - Charge point ID, 
+ - Location, 
+ - Type of Charger.
+
+More information about electric vehicles in Dundee can be found on the Drive Dundee Electric website.
