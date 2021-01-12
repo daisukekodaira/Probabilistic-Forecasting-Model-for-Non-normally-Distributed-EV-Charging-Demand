@@ -7,7 +7,7 @@
 %% Initialize
 clear all; clc; close all;
 % Read Data
-allPastData = readtable('allPastEVData.csv');
+allPastData = readtable('LongTermWhitefieldZeroin.csv');
 % Parameters
 days = 30;  % how many days to be repeatedly forecasted
 Nsteps = size(allPastData,1); 
@@ -46,8 +46,8 @@ end
 % Concatenate forecast result
 outTable = cat(1, outTables{:});
 % Wirte the result to the tables
-writetable(outTable, 'resultEVData.csv');   % forecasted result
-writetable(struct2table(resultSummary), 'resultSummary.csv'); % Daily performance summary
+writetable(outTable, 'resultEVData_Ardler.csv');   % forecasted result
+writetable(struct2table(resultSummary), 'resultSummary_Ardler.csv'); % Daily performance summary
 
 %% Display the bset and worst day performance
 % Get the Best Coverage rate day
