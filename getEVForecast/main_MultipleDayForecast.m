@@ -7,7 +7,7 @@
 %% Initialize
 clear all; clc; close all;
 % Read Data
-allPastData = readtable('LongTermWhitefieldZeroin.csv');
+allPastData = readtable('LongTermEVData.csv');
 % Parameters
 days = 30;  % how many days to be repeatedly forecasted
 Nsteps = size(allPastData,1); 

@@ -1,4 +1,4 @@
-BuildingIndex,Year,Month,Day,Hour,Quarter,DayInWeek,HolidayOrNot,EnergyDemand,SOC
+BuildingIndex,Year,Month,Day,Hour,Quarter,DayInWeek,HolidayOrNot,ChargeDischargeKwh,SOCPercent
 1,2018,9,1,0,0,0,0,18.239973,0
 1,2018,9,1,0,1,0,0,18.77968,0
 1,2018,9,1,0,2,0,0,17.01308,0
