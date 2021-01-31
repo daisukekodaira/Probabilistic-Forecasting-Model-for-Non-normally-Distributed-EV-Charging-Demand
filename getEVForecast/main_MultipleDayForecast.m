@@ -7,7 +7,7 @@
 %% Initialize
 clear all; clc; close all;
 % Read Data
-allPastData = readtable('LongTermWhitefieldZeroin.csv');
+allPastData = readtable('LongTermEVData.csv');
 % Parameters
 days = 30;  % how many days to be repeatedly forecasted
 Nsteps = size(allPastData,1); 
@@ -32,11 +32,14 @@ for i = 1:days
     forecastTable = allPastData(forecastStart:forecastEnd, 1:8);  % 1 day more
     targetTable = allPastData(forecastStart:forecastEnd, 9:10);    % the same as forecastTable
     % Perform forecasting for one day
-    [PICoverRate, MAPE, RMSE, outTables{i,1}] = getEVModel_MultipleDay(shortTermTable, forecastTable, targetTable);   
+    [PICoverRate, MAPE, RMSE, PIWidth, outTables{i,1}] = getEVModel_MultipleDay(shortTermTable, forecastTable, targetTable);   
     % Store the forecast result
     resultSummary.PIcoverRate(i, 1) = PICoverRate.ensemble;
+    resultSummary.PIcoverRateBoot(i, 1) = PICoverRate.ensembleBoot;
     resultSummary.MAPE(i, 1) = MAPE.ensemble;
     resultSummary.RMSE(i, 1) = RMSE.ensemble;
+    resultSummary.PIWidth(i, 1) = PIWidth.ensemble;
+    resultSummary.PIWidthBoot(i, 1) = PIWidth.ensembleBoot;
     % get the date to be forecasted. It properly works in case the
     % forecasting is only for whole 1 day.
     resultSummary.date(i,1) = datetime(forecastTable.Year(1), forecastTable.Month(1), forecastTable.Day(1));
@@ -46,19 +49,23 @@ end
 % Concatenate forecast result
 outTable = cat(1, outTables{:});
 % Wirte the result to the tables
-writetable(outTable, 'resultEVData_Ardler.csv');   % forecasted result
-writetable(struct2table(resultSummary), 'resultSummary_Ardler.csv'); % Daily performance summary
+writetable(outTable, 'resultEVData.csv');   % forecasted result
+writetable(struct2table(resultSummary), 'resultSummary.csv'); % Daily performance summary
 
 %% Display the bset and worst day performance
 % Get the Best Coverage rate day
 [bestPIcoverRate, day] = max(resultSummary.PIcoverRate);
+[bestBootPIcoverRate, dayBoot] = max(resultSummary.PIcoverRateBoot);
 getPerformanceGraph(outTables, day,  ['The best PI coverage day / ' datestr(resultSummary.date(day))]);
+getPerformanceGraph(outTables, dayBoot,  ['The best BootPI coverage day / ' datestr(resultSummary.date(dayBoot))]);
 % Get the Best (minimum) RMSE day
 [bestRMSE, day] = min(resultSummary.RMSE);
 getPerformanceGraph(outTables, day, ['The best RMSE day / ' datestr(resultSummary.date(day))]);
 % Get the Worst Coverage rate day
 [worstPIcoverRate, day] = min(resultSummary.PIcoverRate);
+[worstBpptPIcoverRate, dayBoot] = min(resultSummary.PIcoverRateBoot);
 getPerformanceGraph(outTables, day,  ['The worst PI coverage day / ' datestr(resultSummary.date(day))]);
+getPerformanceGraph(outTables, dayBoot,  ['The worst BootPI coverage day / ' datestr(resultSummary.date(dayBoot))]);
 % Get the Worst (maximum) RMSE day
 [worstRMSE, day] = max(resultSummary.RMSE);
 getPerformanceGraph(outTables, day, ['The worst RMSE day / ' datestr(resultSummary.date(day))]);
@@ -66,6 +73,7 @@ getPerformanceGraph(outTables, day, ['The worst RMSE day / ' datestr(resultSumma
 
 function getPerformanceGraph(outTables, day, figTitle)
     PI = [outTables{day}.EnergyPImax outTables{day}.EnergyPImin];
+    PIBoot = [outTables{day}.EnergyPIBootmax outTables{day}.EnergyPIBootmin];
     determPred =  outTables{day}.EnsembleEnergy;
     observed = outTables{day}.EnergyDemand;
     alph = 0.05;
@@ -78,5 +86,5 @@ function getPerformanceGraph(outTables, day, figTitle)
     %   5. Prediction Inverval [array]
     %   6. figure title [char]
     %   7. Interval width ex) 96% -> 0.5
-    graph_desc(1:size(PI,1), 'EV demand [kwh]', determPred, observed, PI, figTitle, alph);
+    graph_desc(1:size(PI,1), 'EV demand [kwh]', determPred, observed, PI, PIBoot, figTitle, alph);
 end

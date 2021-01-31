@@ -10,7 +10,7 @@
 %     The output of the function is "resultEVData.csv"
 % ----------------------------------------------------------------------------
 
-function [PICoverRate, MAPE, RMSE, outTable] = getEVModel_MultipleDay(shortTermTable, predictorTable, targetTable)  
+function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(shortTermTable, predictorTable, targetTable)  
     % parameters
     buildingIndex = shortTermTable.BuildingIndex(1);
     ci_percentage = 0.05; % 0.05 = 95% it must be between 0 to 1
@@ -58,8 +58,9 @@ function [PICoverRate, MAPE, RMSE, outTable] = getEVModel_MultipleDay(shortTermT
         predData.EnsembleEnergy(i) = sum(weight.Energy(hour,:).*predData.IndEnergy(i, :));
         predData.EnsembleSOC(i) = sum(weight.SOC(hour,:).*predData.IndSOC(i, :));
     end
-    % Get Prediction Interval 
+    % Get Prediction Interval
     [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(predictorTable, predData.EnsembleEnergy, errDist.Energy);
+    [predData.EnergyPIBootmin, predData.EnergyPIBootmax] = getPIBootstrap(predictorTable, predData.EnsembleEnergy, errDist.Energy);
     [predData.SOCPImean, predData.SOCPImin, predData.SOCPImax] = getPI(predictorTable, predData.EnsembleSOC, errDist.SOC);
 
     %% Write  down the forecasted result in csv file
@@ -67,13 +68,17 @@ function [PICoverRate, MAPE, RMSE, outTable] = getEVModel_MultipleDay(shortTermT
 
     %% Get forecast performance summary
     energyTransPI =  [predData.EnergyPImin, predData.EnergyPImax];
+    energyTransPIBoot =  [predData.EnergyPIBootmin, predData.EnergyPIBootmax];
+
     socPI =  [predData.SOCPImin, predData.SOCPImax];
     % Energy demand (ensembled)
-    [PICoverRate.ensemble, MAPE.ensemble, RMSE.ensemble] = getDailyPerformance(energyTransPI, predData.EnsembleEnergy, targetTable.EnergyDemand);
+    [PICoverRate.ensemble, MAPE.ensemble, RMSE.ensemble, PIWidth.ensemble] = getDailyPerformance(energyTransPI, predData.EnsembleEnergy, targetTable.EnergyDemand);
+    [PICoverRate.ensembleBoot, ~, ~, PIWidth.ensembleBoot] = getDailyPerformance(energyTransPIBoot, predData.EnsembleEnergy, targetTable.EnergyDemand);
+
     % Energy emand (k-means)
-    [~, MAPE.kmeans, RMSE.kmeans] = getDailyPerformance([], predData.IndEnergy(:,1), targetTable.EnergyDemand);
+    [~, MAPE.kmeans, RMSE.kmeans, ~] = getDailyPerformance([], predData.IndEnergy(:,1), targetTable.EnergyDemand);
     % Energy demand (Neural Network)
-    [~, MAPE.neuralNet, RMSE.neuralNet] = getDailyPerformance([], predData.IndEnergy(:,2), targetTable.EnergyDemand);
+    [~, MAPE.neuralNet, RMSE.neuralNet, ~] = getDailyPerformance([], predData.IndEnergy(:,2), targetTable.EnergyDemand);
     % SOC   
     %     [PICoverRate.ensemble, MAPE.ensemble] = getDailyPerformance(socPI, predData.EnsembleEnergy, targetTable.EnergyDemand, ci_percentage);
     
