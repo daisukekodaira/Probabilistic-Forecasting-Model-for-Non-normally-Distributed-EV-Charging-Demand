@@ -1,7 +1,7 @@
-function [PICoverRate, MAPE, RMSE] = getDailyPerformance(PI, determPred, observed)
+function [PICoverRate, MAPE, RMSE, PIWidth] = getDailyPerformance(PI, determPred, observed)
     % Calculate cover rate of PI
     if isempty(PI) == 0
-        % we have PI to be described
+        % If we have PI to be described
         count = 0;
         for i = 1:size(observed,1)
             if (PI(i,1)<=observed(i)) && (observed(i)<=PI(i,2))
@@ -9,9 +9,11 @@ function [PICoverRate, MAPE, RMSE] = getDailyPerformance(PI, determPred, observe
             end
         end
         PICoverRate = 100*count/size(observed,1);
+        PIWidth = mean(PI(:,2) - PI(:,1));  % (Upper boundary) - (Lower boundary)
     else
-        % we don't have PIs to be described
+        % If we don't have PIs to be described, return empty
         PICoverRate = [];
+        PIWidth = [];
     end
         
     % Calculate MAPE and RMSE
