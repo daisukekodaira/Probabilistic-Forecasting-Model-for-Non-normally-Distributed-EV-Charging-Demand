@@ -59,10 +59,15 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
         predData.EnsembleSOC(i) = sum(weight.SOC(hour,:).*predData.IndSOC(i, :));
     end
     % Get Prediction Interval
+    % 1. Confidence interval basis method
+    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(predictorTable, predData.EnsembleEnergy, errDist.Energy);
     [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(predictorTable, predData.EnsembleEnergy, errDist.Energy);
     [predData.EnergyPIBootmin, predData.EnergyPIBootmax] = getPIBootstrap(predictorTable, predData.EnsembleEnergy, errDist.Energy);
     [predData.SOCPImean, predData.SOCPImin, predData.SOCPImax] = getPI(predictorTable, predData.EnsembleSOC, errDist.SOC);
-
+    % 2. Neural Network basis method
+    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPINeuralNet(predictorTable, predData.EnsembleEnergy, errDist.Energy);
+    
+    
     %% Write  down the forecasted result in csv file
     outTable = [predictorTable, struct2table(predData), targetTable];
 
