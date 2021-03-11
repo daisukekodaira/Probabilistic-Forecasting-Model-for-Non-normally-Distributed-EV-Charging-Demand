@@ -15,7 +15,7 @@ function err_dist = getErrorDist(validData, err)
     end
     % build the error distibution
     steps = size(validData.Predictor.Hour, 1);
-    % The hour and quater in 'err' are composed of from 0 to 23.
+    % The hour and quater in 'err' are composed of 0 to 23.
     % On the other hand, err matrix column and row are compose of from 1 to 24. 
     % 'err' always require +1 to match the hour/quater with the column and row in 'err'    
     for i = 1:steps
