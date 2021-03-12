@@ -12,7 +12,7 @@ function [PImean, PImin, PImax] = getPINeuralNet(predictors, determPred, err_dis
             edgeX = icdf(pd, [.000001, .9999999]);
             % get x and y to be discribed
             x = linspace(edgeX(1), edgeX(2));
-            y = pdf(pd, x);
+            y = pdf(pd, x);v 
             plot(x,y);
             % set area to be patched
             xci = [linspace(edgeX(1), cutoffX(1)); linspace(cutoffX(2), edgeX(2))]; % set X axis area
