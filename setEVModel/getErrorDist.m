@@ -3,7 +3,23 @@
 % - Input: Array [error, hour, quater]
 % - Return: Structure 24*4
 
-function err_dist = getErrorDist(validData, err)
+function [errEnergyRestruct, errSOCRestruct] = getErrorDist(Data, weight)
+    % Generate forecasting result based on ensembled model
+    steps = size(Data.Predictor, 1);
+    for i = 1:steps
+        hour = Data.Predictor.Hour(i)+1;       % Transpose 'hours' from 0 to 23 -> from 1 to 24
+        ensembledPredEnergy(i,:) = sum(weight.Energy(hour, :).*Data.PredEnergy(i,:));
+        ensembledPredSOC(i,:) = sum(weight.SOC(hour, :).*Data.PredSOC(i, :));
+    end
+    % Calculate error from validation data: error[%]
+    errEnergy = ensembledPredEnergy - Data.TargetEnergy;
+    errSOC = ensembledPredSOC - Data.TargetSOC;                
+
+    errEnergyRestruct = restructErrorData(errEnergy);
+    errSOCRestruct = restructErrorData(errSOC);
+end
+
+function restructErrorData(err)
     % Initialize the structure for error distribution
     % structure of err_distribution.data is as below:
     %   row=24hours(1~24 in "LongTermPastData"), columns=4quarters.
