@@ -63,15 +63,15 @@ function setEVModel(LongTermPastData)
     for i = 1:steps
         hour = allData.Predictor.Hour(i)+1;       % Transpose 'hours' from 0 to 23 -> from 1 to 24
         ensembledPredEnergy(i,:) = sum(weight.Energy(hour, :).*allData.PredEnergy(i,:));
-        ensembledPredSOC(i,:) = sum(weight.SOC(hour, :).*allData.PredSOC(i, :));
+        %         ensembledPredSOC(i,:) = sum(weight.SOC(hour, :).*allData.PredSOC(i, :));
     end
     % Calculate error from validation data: error[%]
     allData.ErrEnergy = ensembledPredEnergy - allData.TargetEnergy;
-    allData.ErrSOC = ensembledPredSOC - allData.TargetSOC;
+    %     allData.ErrSOC = ensembledPredSOC - allData.TargetSOC;
                        
     % Get error distribution
     errDist.Energy = getErrorDist(allData, allData.ErrEnergy);
-    errDist.SOC = getErrorDist(allData, allData.ErrSOC);
+    %     errDist.SOC = getErrorDist(allData, allData.ErrSOC);
         
     %% Save .mat files
     filename = {'EV_weight_'; 'EV_errDist_'};

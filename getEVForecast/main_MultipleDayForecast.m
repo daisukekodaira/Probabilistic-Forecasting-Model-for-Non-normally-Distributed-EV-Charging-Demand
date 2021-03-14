@@ -32,7 +32,7 @@ for i = 1:days
     forecastTable = allPastData(forecastStart:forecastEnd, 1:8);  % 1 day more
     targetTable = allPastData(forecastStart:forecastEnd, 9:10);    % the same as forecastTable
     % Perform forecasting for one day
-    [PICoverRate, MAPE, RMSE, outTables{i,1}] = getEVModel_MultipleDay(shortTermTable, forecastTable, targetTable);   
+    [PICoverRate, MAPE, RMSE, outTables{i,1}] = getEVMode_MultipleDay(shortTermTable, forecastTable, targetTable);   
     % Store the forecast result
     resultSummary.PIcoverRate(i, 1) = PICoverRate.ensemble;
     resultSummary.MAPE(i, 1) = MAPE.ensemble;
