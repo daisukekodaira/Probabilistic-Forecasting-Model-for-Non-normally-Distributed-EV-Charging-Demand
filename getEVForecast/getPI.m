@@ -4,7 +4,6 @@
 %       - 
 
 function [PImean, PImin, PImax] = getPI(predictors, determPred, err_distribution)
-                
     for i = 1:size(predictors,1)
         hour = predictors.Hour(i)+1;   % hour 1~24 (original data is from 0 to 23, so add '1' for the matrix)
         quarter = predictors.Quarter(i)+1; % quater 1~4 (original data is from 0 to 3, so add '1' for the matrix)

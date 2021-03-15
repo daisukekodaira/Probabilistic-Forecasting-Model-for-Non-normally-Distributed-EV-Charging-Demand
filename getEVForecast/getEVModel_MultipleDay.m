@@ -60,11 +60,15 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
     end
     % Get Prediction Interval
     % 1. Confidence interval basis method
-    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(predictorTable, predData.EnsembleEnergy, errDist.Energy);
-    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(predictorTable, predData.EnsembleEnergy, errDist.Energy);
+    % Note: Method1 utilizes the error distribution derived from one month
+    %            validation data which is not concained in the training process
+    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(validData, predData.EnsembleEnergy, errDist.Energy);
+    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(validData, predData.EnsembleEnergy, errDist.Energy);
     [predData.EnergyPIBootmin, predData.EnergyPIBootmax] = getPIBootstrap(predictorTable, predData.EnsembleEnergy, errDist.Energy);
     [predData.SOCPImean, predData.SOCPImin, predData.SOCPImax] = getPI(predictorTable, predData.EnsembleSOC, errDist.SOC);
     % 2. Neural Network basis method
+    % Note: Method2 utilized the error distribution deriveved from all past
+    %           data which is utilized for trining process in ensemble forecastin model 
     [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPINeuralNet(predictorTable, predData.EnsembleEnergy, errDist.Energy);
     
     
