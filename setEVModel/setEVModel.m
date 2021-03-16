@@ -56,38 +56,17 @@ function setEVModel(LongTermPastData)
     weight.Energy = getWeight(validData.Predictor, validData.PredEnergy, validData.TargetEnergy);
     weight.SOC = getWeight(validData.Predictor, validData.PredSOC, validData.TargetSOC);
         
-    %% Generate probability interval using validation result
-    % Generate forecasting result based on ensembled model
-    steps = size(validData.Predictor, 1);
-    for i = 1:steps
-        hour = validData.Predictor.Hour(i)+1;       % Transpose 'hours' from 0 to 23 -> from 1 to 24
-        ensembledPredEnergy(i,:) = sum(weight.Energy(hour, :).*validData.PredEnergy(i,:));
-        ensembledPredSOC(i,:) = sum(weight.SOC(hour, :).*validData.PredSOC(i, :));
-    end
-    % Calculate error from validation data: error[%]
-    validData.ErrEnergy = ensembledPredEnergy - validData.TargetEnergy;
-    validData.ErrSOC = ensembledPredSOC - validData.TargetSOC;
+    %% Get error distribution for validation data 
+    % Calculate error from validation data
+     [validData.errDistEnergy, validData.errDistSOC, validData.errEnergy] = getErrorDist(validData, weight);
                        
-    % Get error distribution
-    errDist.EnergyValid = getErrorDist(validData, validData.ErrEnergy);
-    errDist.SOCValid = getErrorDist(validData, validData.ErrSOC);
-
-    %% Get error distribution using all past data
+    %% Get error distribution for all past data (training+validation data)
     % Get forecasted result from each method
     [allData.PredEnergy(:,1), allData.PredSOC(:,1)]  = kmeansEV_Forecast(allData.Predictor, path);
     [allData.PredEnergy(:,2), allData.PredSOC(:,2)] = neuralNetEV_Forecast(allData.Predictor, path);     
-    % Generate ultimate forecasting result based on ensembled model
-    steps = size(allData.Predictor, 1);
-    for i = 1:steps
-        hour = allData.Predictor.Hour(i)+1;       % Transpose 'hours' from 0 to 23 -> from 1 to 24
-        ensembledPredEnergy(i,:) = sum(weight.Energy(hour, :).*allData.PredEnergy(i,:));
-    end
-    % Calculate error from all past data
-    allData.ErrEnergy = ensembledPredEnergy - allData.TargetEnergy;
-    % Get error distribution
-    errDist.EnergyAll = getErrorDist(allData, allData.ErrEnergy);
+    [allData.errDistEnergy, allData.errDistSOC, allData.errEnergy]= getErrorDist(allData, weight);
     % Get neural network for PI 
-    getPINeuralnet(allData, errDist.EnergyAll);
+    getPINeuralnet(allData);
     
     
     %% Save .mat files

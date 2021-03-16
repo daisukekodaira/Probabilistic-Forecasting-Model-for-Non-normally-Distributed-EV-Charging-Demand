@@ -1,7 +1,6 @@
-function getPINeuralnet(data, err_distribution)
-       
+function getPINeuralnet(data)
     % 
-    trainedPINeuralnet = NeuralNet_train(data.TargetEnergy, err_distribution);
+    trainedPINeuralnet = NeuralNet_train(data.TargetEnergy, data.errDistEnergy);
     
     %% save result mat file
     building_num = num2str(trainData.BuildingIndex(1));
@@ -16,7 +15,7 @@ function trainedNet = NeuralNet_train(targetEnergy, err_distribution)
     days = size(err_distribution(1,1).err,1);
     lastDay = days-30;
     for day = 1:lastDay
-        [cutoff(:, day)] = getCutoff(err_distribution.EnergyAll(day+((day-1)*96*30:(day*96*30))));  % extract 30 days moving window
+        cutoff(:, day) = getCutoff(err_distribution);  % extract 30 days moving window
         inputs(:,day) = targetEnergy(1+96*30+(day-1)*96:1+96*30+day*96);
     end
     
@@ -41,9 +40,9 @@ function [cutoffX] = getCutoff(err_distribution)
     for hour = 1:hours
         for quarter = 1:quarters
             % get probabilisity density function object 
-            pd = fitdist(err_distribution(hour, quarter),'Kernel','Kernel','epanechnikov');
+            pd = fitdist(err_distribution(hour, quarter).err,'Kernel','Kernel','epanechnikov');
             % get cutoff value for X and edge of the PDF
-            cutoffX = icdf(pd, [.025, .975]);
+            [cutoffX(hour, quarter)] = icdf(pd, [.025, .975]);  % lower, upper
         end
     end
     % Display sample PDF and cutoff
