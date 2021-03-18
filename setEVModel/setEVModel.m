@@ -22,6 +22,10 @@ function setEVModel(LongTermPastData)
         flag = -1;  % return error
         return
     end 
+     
+    %% Data preprocessing
+    TableAllPastData = preprocess(TableAllPastData);
+
     
     %% Devide the data into training and validation
     % Parameter
@@ -29,7 +33,12 @@ function setEVModel(LongTermPastData)
     nValidData = 96*ValidDays; % 24*4*day   valid_data = longPast(end-n_valid_data+1:end, :); 
     colPredictors = {'BuildingIndex', 'Year', 'Month', 'Day', 'Hour', 'Quarter', 'DayInWeek', 'HolidayOrNot'};
         
-    % divide all past data into training and validation
+    %% Data restructure
+    % Arrange the structure to be sotred for all data
+    allData.Predictor = TableAllPastData(:, colPredictors);
+    allData.TargetEnergy = table2array(TableAllPastData(:, {'ChargeDischargeKwh'})); % trarget Data for validation (targets only)
+    allData.TargetSOC = table2array(TableAllPastData(:, {'SOCPercent'})); % trarget Data for validation (targets only)
+    % Divide all past data into training and validation
     trainData = TableAllPastData(1:end-nValidData, :);     % training Data (predictors + target)
     validData.Predictor = TableAllPastData(end-nValidData+1:end, colPredictors);    % validation Data (predictors only)
     validData.TargetEnergy = table2array(TableAllPastData(end-nValidData+1:end, {'ChargeDischargeKwh'})); % trarget Data for validation (targets only)
@@ -51,22 +60,19 @@ function setEVModel(LongTermPastData)
     weight.Energy = getWeight(validData.Predictor, validData.PredEnergy, validData.TargetEnergy);
     weight.SOC = getWeight(validData.Predictor, validData.PredSOC, validData.TargetSOC);
         
-    %% Generate probability interval using validation result
-    % Generate forecasting result based on ensembled model
-    steps = size(validData.Predictor, 1);
-    for i = 1:steps
-        hour = validData.Predictor.Hour(i)+1;       % Transpose 'hours' from 0 to 23 -> from 1 to 24
-        ensembledPredEnergy(i,:) = sum(weight.Energy(hour, :).*validData.PredEnergy(i,:));
-        ensembledPredSOC(i,:) = sum(weight.SOC(hour, :).*validData.PredSOC(i, :));
-    end
-    % Calculate error from validation data: error[%]
-    validData.ErrEnergy = ensembledPredEnergy - validData.TargetEnergy;
-    validData.ErrSOC = ensembledPredSOC - validData.TargetSOC;
+    %% Get error distribution for validation data 
+    % Calculate error from validation data
+     [validData.errDistEnergy, validData.errDistSOC, validData.errEnergy] = getErrorDist(validData, weight);
                        
-    % Get error distribution
-    errDist.Energy = getErrorDist(validData, validData.ErrEnergy);
-    errDist.SOC = getErrorDist(validData, validData.ErrSOC);
-        
+    %% Get error distribution for all past data (training+validation data)
+    % Get forecasted result from each method
+    [allData.PredEnergy(:,1), allData.PredSOC(:,1)]  = kmeansEV_Forecast(allData.Predictor, path);
+    [allData.PredEnergy(:,2), allData.PredSOC(:,2)] = neuralNetEV_Forecast(allData.Predictor, path);     
+    [allData.errDistEnergy, allData.errDistSOC, allData.errEnergy]= getErrorDist(allData, weight);
+    % Get neural network for PI 
+    getPINeuralnet(allData);
+    
+    
     %% Save .mat files
     filename = {'EV_weight_'; 'EV_errDist_'};
     Bnumber = num2str(TableAllPastData.BuildingIndex(1)); % Get building index to add to fine name
