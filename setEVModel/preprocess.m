@@ -7,24 +7,20 @@ function preprocess(data)
     endMonth = data.Month(1);
     initDay = data.Day(1);
     endDay = data.Day(1);
-    
-    datetime([data.year(1),  data.Month(1), data.Day(1)])
-    
-    
-    
-    initYear - endYear
-    days = sum(emoday(initYear, initMonth:12))+...
-                sum(emoday(initYear+1, initMonth:12));
-    
+    initialDateTime = datetime([data.year(1),  data.Month(1), data.Day(1), 0, 0, 0]);
+    endDateTime = datetime([data.year(end),  data.Month(end), data.Day(end)]);
+    days = day(initialDateTime) - day(endDateTime);
+    steps = days*24*4;  % days*hours*quarters   
 
-    quarter*hour*day
-    
+    for quarters = 1:4
+        for hours = 1:24
+            fullData.year = datetime()
     
     
     for year = initYear:endYear
-        for month = initMonth:endMonth
-            for day = initDay:endDay
-                fullTable.Year(1) = year; 
+        for month = initMonth(year):endMonth(year)
+            for day = initDay(month):endDay(month)
+                fullTable.Year(1) = year*ones(96,1); 
             
             end
         end
