@@ -22,6 +22,10 @@ function setEVModel(LongTermPastData)
         flag = -1;  % return error
         return
     end 
+     
+    %% Data preprocessing
+    TableAllPastData = preprocess(TableAllPastData);
+
     
     %% Devide the data into training and validation
     % Parameter
