@@ -18,8 +18,8 @@ function [PImean, PImin, PImax] = getPINeuralNet(predictors, determPred, err_dis
             xci = [linspace(edgeX(1), cutoffX(1)); linspace(cutoffX(2), edgeX(2))]; % set X axis area
             yci = pdf(pd,xci);  % set Y axis area
             % Patch the outside of the Prediction Interval
-            patch([xci(1,:) cutoffX(1)], [yci(1,:) 0], [0.5 0.5 0.5])
-            patch([cutoffX(2) xci(2,:)], [0 yci(2,:)], [0.5 0.5 0.5])
+            patch([xci(1,:) cutoffX(1)], [yci(1,:) 0], [0.5 0.5 0.5]);
+            patch([cutoffX(2) xci(2,:)], [0 yci(2,:)], [0.5 0.5 0.5]);
         end
     end
 
