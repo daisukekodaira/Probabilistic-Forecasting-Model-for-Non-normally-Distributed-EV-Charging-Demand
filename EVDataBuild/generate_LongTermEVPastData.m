@@ -64,8 +64,8 @@ function generate_LongTermEVPastData(inputFileName, outputFileName)
             data_matrix(steps,col_day) = day(curerrentTime(record));                          % Day
             data_matrix(steps,col_hour) = hour(curerrentTime(record));                         % hour
             data_matrix(steps,col_quarter) = floor(minute(curerrentTime(record))/15);      % Quarter
-            data_matrix(steps,col_P1) = 0;                                                                    % P1(Day in a week)
-            data_matrix(steps,col_P2) = 0;                                                                    % P2(Holiday or not)
+            data_matrix(steps,col_P1) = 0;                                                                         % P1(Day in a week)
+            data_matrix(steps,col_P2) = 0;                                                                         % P2(Holiday or not)
             if curerrentTime(record) == StartTime(record)
                data_matrix(steps,col_energy) = energyAmount(record,1);      % Charge/Discharge[kwh]
                curerrentTime = modifiedStartTime;
@@ -103,6 +103,36 @@ function generate_LongTermEVPastData(inputFileName, outputFileName)
     record=1; % 1 quarter (record for output file)
     total_energy = 0;
     % Consolidation
+    % get DataTime for each record
+    dateTime = datetime(data_matrix(col_year), ...
+                                    data_matrix(col_month), ...
+                                    data_matrix(col_day), ...
+                                    data_matrix(col_hour), ...
+                                    data_matrix(quarter));
+
+    for time_inst = 1:size(data_matrix,1)
+        total_energy = total_energy + data_matrix(time_inst, col_energy);
+        % check if the last time_inst or not
+        %  -> if the last time_inst, break the loop                
+        if time_inst == size(data_matrix,1)
+            output_matrix(record,col_building:col_P2) = data_matrix(time_inst, col_building:col_P2);
+            output_matrix(record,col_energy) = total_energy; % save the total energy during the quarter
+            break;
+        % Check if the new quarter or not
+        elseif dateTime(time_inst) == dateTime(time_inst+1)
+            % If the record has the same dateTime as next record, store the accumulated energy transaction with predictors
+            total_energy =  total_energy + data_matrix(time_inst+1, col_energy);
+        elseif dateTime(time_inst) + dateTm
+        output_matrix(record,col_building:col_P2) = data_matrix(time_inst, col_building:col_P2);
+        output_matrix(record,col_energy) = total_energy + data_matrix(time_inst+1, col_energy); % save the total energy during the quarter
+        % Reset the accumulated energy for specific time record 
+        total_energy = 0;
+        % Move to next record
+        record = record+1;
+        end
+    end
+    
+    
     for time_inst = 1:size(data_matrix,1)
         total_energy = total_energy + data_matrix(time_inst, col_energy);
         % check if the last time_inst or not
