@@ -24,12 +24,13 @@ function setEVModel(LongTermPastData)
     end 
      
     %% Data preprocessing
-    TableAllPastData = preprocess(TableAllPastData);
-
+    % under configuration 2021/4/15 Kodaira ---------------------
+    %     TableAllPastData = preprocess(TableAllPastData);
+    % ----------------------------------------------------------------
     
     %% Devide the data into training and validation
     % Parameter
-    ValidDays = 30; % it must be above 1 day. 3days might provide the best performance
+    ValidDays = 3; % it must be above 1 day. 3days might provide the best performance
     nValidData = 96*ValidDays; % 24*4*day   valid_data = longPast(end-n_valid_data+1:end, :); 
     colPredictors = {'BuildingIndex', 'Year', 'Month', 'Day', 'Hour', 'Quarter', 'DayInWeek', 'HolidayOrNot'};
         
@@ -70,7 +71,9 @@ function setEVModel(LongTermPastData)
     [allData.PredEnergy(:,2), allData.PredSOC(:,2)] = neuralNetEV_Forecast(allData.Predictor, path);     
     [allData.errDistEnergy, allData.errDistSOC, allData.errEnergy]= getErrorDist(allData, weight);
     % Get neural network for PI 
-    getPINeuralnet(allData);
+    % this part is under configuration 2021/4/15 --------------------------
+    %     getPINeuralnet(allData);
+    % ----------------------------------------------------------------
     
     
     %% Save .mat files
