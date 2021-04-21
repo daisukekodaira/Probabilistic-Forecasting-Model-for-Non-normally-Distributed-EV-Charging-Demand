@@ -17,16 +17,14 @@ function setEVModel(LongTermPastData)
     
     %% Load data
     if strcmp(LongTermPastData, 'NULL') == 0    % if the filename is not null
-        TableAllPastData = readtable(LongTermPastData);
+        T = readtable(LongTermPastData);
     else  % if the fine name is null
         flag = -1;  % return error
         return
     end 
      
     %% Data preprocessing
-    % under configuration 2021/4/15 Kodaira ---------------------
-    %     TableAllPastData = preprocess(TableAllPastData);
-    % ----------------------------------------------------------------
+    TableAllPastData = preprocess(T);
     
     %% Devide the data into training and validation
     % Parameter
