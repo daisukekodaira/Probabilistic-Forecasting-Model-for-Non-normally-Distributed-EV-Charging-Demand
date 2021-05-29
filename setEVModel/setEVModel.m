@@ -17,14 +17,14 @@ function setEVModel(LongTermPastData)
     
     %% Load data
     if strcmp(LongTermPastData, 'NULL') == 0    % if the filename is not null
-        T = readtable(LongTermPastData);
+        TableAllPastData = readtable(LongTermPastData);
     else  % if the fine name is null
         flag = -1;  % return error
         return
     end 
      
     %% Data preprocessing
-    TableAllPastData = preprocess(T);
+    %     TableAllPastData = preprocess(T);
     
     %% Devide the data into training and validation
     % Parameter
@@ -67,7 +67,7 @@ function setEVModel(LongTermPastData)
     % Get forecasted result from each method
     [allData.PredEnergy(:,1), allData.PredSOC(:,1)]  = kmeansEV_Forecast(allData.Predictor, path);
     [allData.PredEnergy(:,2), allData.PredSOC(:,2)] = neuralNetEV_Forecast(allData.Predictor, path);     
-    [allData.errDistEnergy, allData.errDistSOC, allData.errEnergy]= getErrorDist(allData, weight);
+    [allData.errDistEnergy, allData.errDistSOC, allData.ensembledPredEnergy]= getErrorDist(allData, weight);
     % Get neural network for PI 
     % this part is under configuration 2021/4/15 --------------------------
     %     getPINeuralnet(allData);
@@ -75,10 +75,10 @@ function setEVModel(LongTermPastData)
     
     
     %% Save .mat files
-    filename = {'EV_weight_'; 'EV_errDist_'};
+    filename = {'EV_trainingData_', 'EV_weight_'};
     Bnumber = num2str(TableAllPastData.BuildingIndex(1)); % Get building index to add to fine name
-    varX = {'weight'; 'errDist'};
-    for i = 1:size(varX,1)
+    varX = {'allData', 'weight'};
+    for i = 1:size(varX,2)
         name = strcat(filename(i), Bnumber, '.mat');
         matname = fullfile(path, name);
         save(char(matname), char(varX(i)));

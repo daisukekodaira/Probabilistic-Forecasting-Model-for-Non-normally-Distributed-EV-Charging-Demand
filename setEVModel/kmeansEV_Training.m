@@ -11,8 +11,8 @@ function kmeansEV_Training(trainData, colPredictors, path)
     %         error_status = -1;
     %     end
     
-    % Display for user
-    disp('Training the k-menas & Baysian model....');
+    %     % Display for user
+    %     disp('Training the k-menas & Baysian model....');
 
     %% Kmeans clustering for Charge/Discharge data
     % Extract appropriate data from inputdata for Energy transactions: pastEnegyTrans
@@ -47,6 +47,6 @@ function kmeansEV_Training(trainData, colPredictors, path)
     save_name = '\EV_trainedKmeans_';
     save_name = strcat(path,save_name,building_num,'.mat');
     save(save_name, 'idx_EnergyTrans','idx_SOC', 'k_EnergyTrans','k_SOC', 'nb_EnergyTrans','nb_SOC', 'c_EnergyTrans', 'c_SOC');
-    disp('Training the k-menas & Baysian model.... Done!');
+    %     disp('Training the k-menas & Baysian model.... Done!');
 
 end

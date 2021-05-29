@@ -1,6 +1,6 @@
 function neuralNetEV_Training(trainData, colPredictors, path)
-    % Display for user
-    disp('Training the neraul network model....');
+    %     % Display for user
+    %     disp('Training the neraul network model....');
        
     %% Train the model for Energy Transition
     % Training for Energy Trantision
@@ -14,8 +14,8 @@ function neuralNetEV_Training(trainData, colPredictors, path)
     save_fullPath = strcat(path,save_name1,building_num,'.mat');
     clearvars path;
     save(save_fullPath, 'trainedNet_EnergyTrans', 'trainedNet_SOC');
-    % Display for user
-    disp('Training the neraul network model.... Done!');
+    %     % Display for user
+    %     disp('Training the neraul network model.... Done!');
 end
 
 function trainedNet = NeuralNet_train(trainData, columnPredictors, columnTarget)

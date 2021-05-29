@@ -18,17 +18,18 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
     %% Error recognition: Check mat files exist
     name1 = [pwd, '\', 'EV_trainedKmeans_', num2str(buildingIndex), '.mat'];
     name2 = [pwd, '\', 'EV_trainedNeuralNet_', num2str(buildingIndex), '.mat'];
-    name3 = [pwd, '\', 'EV_errDist_', num2str(buildingIndex), '.mat'];
+    name3 = [pwd, '\', 'EV_trainingData_', num2str(buildingIndex), '.mat'];
     name4 = [pwd, '\', 'EV_weight_', num2str(buildingIndex), '.mat'];
-    if exist(name1) == 0 || exist(name2) == 0 || exist(name3) == 0 || exist(name4) == 0
+    if exist(name1) == 0 || exist(name2) == 0 || exist(name3) == 0 || exist(name4) == 0 
         flag = -1;
+        disp('There are missing .mat files from setEV');
         return
     end
     
     %% Load mat files
     s(1).fname = 'EV_trainedKmeans_';
     s(2).fname = 'EV_trainedNeuralNet_';
-    s(3).fname = 'EV_errDist_';
+    s(3).fname = 'EV_trainingData_';
     s(4).fname = 'EV_weight_';
     s(5).fname = num2str(buildingIndex);    
     extention='.mat';
@@ -62,14 +63,13 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
     % 1. Confidence interval basis method
     % Note: Method1 utilizes the error distribution derived from one month
     %            validation data which is not concained in the training process
-    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(validData, predData.EnsembleEnergy, errDist.Energy);
-    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(validData, predData.EnsembleEnergy, errDist.Energy);
-    [predData.EnergyPIBootmin, predData.EnergyPIBootmax] = getPIBootstrap(predictorTable, predData.EnsembleEnergy, errDist.Energy);
-    [predData.SOCPImean, predData.SOCPImin, predData.SOCPImax] = getPI(predictorTable, predData.EnsembleSOC, errDist.SOC);
-    % 2. Neural Network basis method
-    % Note: Method2 utilized the error distribution deriveved from all past
-    %           data which is utilized for trining process in ensemble forecastin model 
-    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPINeuralNet(predictorTable, predData.EnsembleEnergy, errDist.Energy);
+    [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPI(predictorTable, predData.EnsembleEnergy, allData.errDistEnergy);
+    [predData.EnergyPIBootmin, predData.EnergyPIBootmax] = getPIBootstrap(predictorTable, predData.EnsembleEnergy, allData.errDistEnergy);
+    [predData.SOCPImean, predData.SOCPImin, predData.SOCPImax] = getPI(predictorTable, predData.EnsembleSOC, allData.errDistSOC);
+    %     % 2. Neural Network basis method
+    %     % Note: Method2 utilized the error distribution deriveved from all past
+    %     %           data which is utilized for trining process in ensemble forecastin model 
+    %     [predData.EnergyPImean, predData.EnergyPImin, predData.EnergyPImax] = getPINeuralNet(predictorTable, predData.EnsembleEnergy,  allData.errDistEnergy);
     
     
     %% Write  down the forecasted result in csv file

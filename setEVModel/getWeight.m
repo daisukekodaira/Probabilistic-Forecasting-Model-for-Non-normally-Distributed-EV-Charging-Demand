@@ -2,8 +2,8 @@ function weight = getWeight(predictors, forecasted, target)
     % Reconstruct matrix for PSO calculation
     %  - Uniqe coefficient is defined for each hour 
     
-    % Display for user
-    disp('Optimizing the weights for ensemble model....');
+    %     % Display for user
+    %     disp('Optimizing the weights for ensemble model....');
         
     % Restructure the predicted data
     steps = size(forecasted,1);
@@ -44,8 +44,8 @@ function weight = getWeight(predictors, forecasted, target)
         [weight(hour, :),~,~,~] = particleswarm(objFunc,nvars,lb,ub, options);
     end
     
-    % Display for user
-    disp('Optimizing the weight for ensemble model.... Done!');
+    %     % Display for user
+    %     disp('Optimizing the weight for ensemble model.... Done!');
 end
 
 

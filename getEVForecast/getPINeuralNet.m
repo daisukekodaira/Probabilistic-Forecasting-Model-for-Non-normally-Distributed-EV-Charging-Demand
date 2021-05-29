@@ -1,5 +1,5 @@
-function [PImean, PImin, PImax] = getPINeuralNet(err_distribution)
-    [UpErr, LwErr] = getCutoff();
+function [PImean, PImin, PImax] = getPINeuralNet(predictorTable, EnsembleEnergy,  errDistEnergy)
+    [cutoffX] = getCutoff(errDistEnergy);
     
    
     %% Train the model for Energy Transition
@@ -36,9 +36,7 @@ function trainedNet = NeuralNet_train(trainData, columnPredictors, columnTarget)
     end   
 end
 
-end
-
-function [PImean, PImin, PImax] = getCutoff(predictors, determPred, err_distribution)
+function [cutoffX] = getCutoff(err_distribution)
 
     hours = size(err_distribution,1);
     quarters = size(err_distribution,2);
@@ -48,8 +46,8 @@ function [PImean, PImin, PImax] = getCutoff(predictors, determPred, err_distribu
             % get probabilisity density function object 
             pd = fitdist(err_distribution(hour, quarter).err,'Kernel','Kernel','epanechnikov');
             % get cutoff value for X and edge of the PDF
+            % the cutoff is calculated by Inverse cumulative distribution function (icdf)
             cutoffX = icdf(pd, [.025, .975]);
-<<<<<<< HEAD
             edgeX = icdf(pd, [.000001, .9999999]);
             % get x and y to be discribed
             x = linspace(edgeX(1), edgeX(2));
@@ -61,8 +59,6 @@ function [PImean, PImin, PImax] = getCutoff(predictors, determPred, err_distribu
             % Patch the outside of the Prediction Interval
             patch([xci(1,:) cutoffX(1)], [yci(1,:) 0], [0.5 0.5 0.5]);
             patch([cutoffX(2) xci(2,:)], [0 yci(2,:)], [0.5 0.5 0.5]);
-=======
->>>>>>> 40b450d692529563219be47a984e8e53759d87b2
         end
     end
     

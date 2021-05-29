@@ -11,8 +11,8 @@ function [predEnergyTrans, predSOC] = kmeansEV_Forecast(forecastData, path)
 %         Alg_State3 = -1;
 %     end
 
-    % Display for user
-    disp('Validating the k-menas & Baysian model....');
+    %     % Display for user
+    %     disp('Validating the k-menas & Baysian model....');
     
     %% Read inpudata
     building_num = num2str(forecastData.BuildingIndex(1)); % distribute with building number 
@@ -29,6 +29,6 @@ function [predEnergyTrans, predSOC] = kmeansEV_Forecast(forecastData, path)
     labelSOC = nb_SOC.predict(forecastData);
     predSOC = c_SOC(labelSOC,:);
     
-    % Display for user    
-    disp('Validating the k-menas & Baysian model.... Done!');
+    %     % Display for user    
+    %     disp('Validating the k-menas & Baysian model.... Done!');
 end

@@ -1,7 +1,7 @@
 function [predEnergyTrans, predSOC] = neuralNetEV_Forecast(forecastData, path)
 
-    % Display for user
-    disp('Validating the Neural Network model....');
+    %     % Display for user
+    %     disp('Validating the Neural Network model....');
 
 
     %% Read Input data
@@ -18,8 +18,8 @@ function [predEnergyTrans, predSOC] = neuralNetEV_Forecast(forecastData, path)
     predEnergyTrans = getAverageOfMultipleForecast(trainedNet_EnergyTrans, forecastData);
     predSOC = getAverageOfMultipleForecast(trainedNet_SOC, forecastData);
     
-    % Display for user    
-    disp('Validating the Neural Network model.... Done!');
+    %     % Display for user    
+    %     disp('Validating the Neural Network model.... Done!');
 
 end
 
