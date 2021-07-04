@@ -14,7 +14,7 @@ function [predEnergyTrans, predSOC] = kmeansEV_Forecast(forecastData, path)
     %     % Display for user
     %     disp('Validating the k-menas & Baysian model....');
     
-    %% Read inpudata
+    %% Read input data
     building_num = num2str(forecastData.BuildingIndex(1)); % distribute with building number 
     % Load mat files
     load_name = '\EV_trainedKmeans_';

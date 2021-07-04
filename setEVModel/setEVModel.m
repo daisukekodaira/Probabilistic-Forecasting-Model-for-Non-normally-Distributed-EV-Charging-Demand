@@ -46,13 +46,15 @@ function setEVModel(LongTermPastData)
     %% Train each model using past load data
     kmeansEV_Training(trainData, colPredictors, path);
     neuralNetEV_Training(trainData, colPredictors, path);
+    LSTMEV_Training(trainData, colPredictors, path);
     %     LSTMEV_Training();    % add LSTM here later
     
     %% Validate the performance of each model
     % Note: return shouldn't be located inside of structure. It should be sotred as matrix.
     %           This is because it makes problem after .m files is converted into java files 
     [validData.PredEnergy(:,1), validData.PredSOC(:,1)]  = kmeansEV_Forecast(validData.Predictor, path);
-    [validData.PredEnergy(:,2), validData.PredSOC(:,2)] = neuralNetEV_Forecast(validData.Predictor, path); 
+    [validData.PredEnergy(:,2), validData.PredSOC(:,2)] = neuralNetEV_Forecast(validData.Predictor, path);
+    [validData.PredEnergy(:,3), validData.PredSOC(:,3)] = LSTMEV_Forecast(validData.Predictor, path);
     %     [PredEnergyTrans_Valid(:,3), PredSOC_Valid(:,3)] = LSTMEV_Forecast(validData, path); % add LSTM here later
     
     %% Optimize the coefficients (weights) for the ensembled forecasting model
@@ -66,7 +68,8 @@ function setEVModel(LongTermPastData)
     %% Get error distribution for all past data (training+validation data)
     % Get forecasted result from each method
     [allData.PredEnergy(:,1), allData.PredSOC(:,1)]  = kmeansEV_Forecast(allData.Predictor, path);
-    [allData.PredEnergy(:,2), allData.PredSOC(:,2)] = neuralNetEV_Forecast(allData.Predictor, path);     
+    [allData.PredEnergy(:,2), allData.PredSOC(:,2)] = neuralNetEV_Forecast(allData.Predictor, path); 
+    [allData.PredEnergy(:,3), allData.PredSOC(:,3)] = LSTMEV_Forecast(allData.Predictor, path); 
     [allData.errDistEnergy, allData.errDistSOC, allData.ensembledPredEnergy]= getErrorDist(allData, weight);
     % Get neural network for PI 
     % this part is under configuration 2021/4/15 --------------------------
