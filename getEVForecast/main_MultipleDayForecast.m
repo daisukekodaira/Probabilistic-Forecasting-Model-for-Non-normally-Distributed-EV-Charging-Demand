@@ -9,7 +9,7 @@ clear all; clc; close all;
 % Read Data
 allPastData = readtable('LongTermEVData.csv');
 % Parameters
-days = 30;  % how many days to be repeatedly forecasted
+days = 2;  % how many days to be repeatedly forecasted
 Nsteps = size(allPastData,1); 
 
 %% Perform forecasting for multiple days
@@ -22,7 +22,7 @@ for i = 1:days
     % forecast: from [end - 96*30] -> [end - 96*29]
     %                to [end - 96*29] -> [end - 96*28]
     % ---------------------------------------------------------------------------
-    % Specify the lines in the talbe
+    % Get forecast data; specify the lines in the talbe
     forecastStart = Nsteps - 96*(days-(i-1)) + 1;
     forecastEnd = forecastStart + 95;
     shortTermEnd = forecastStart - 1; 

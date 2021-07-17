@@ -99,78 +99,65 @@ function generate_LongTermEVPastData(inputFileName, outputFileName)
     data_matrix = sortrows(data_matrix, [col_year col_month col_day col_hour col_quarter]);         
 
     %% Consolidate energy consumptions for the same time instance -> no bug, confirmed 22th March
-    % initilization
-    record=1; % 1 quarter (record for output file)
-    total_energy = 0;
-    % Consolidation
-    % get DataTime for each record
-    dateTime = datetime(data_matrix(col_year), ...
-                                    data_matrix(col_month), ...
-                                    data_matrix(col_day), ...
-                                    data_matrix(col_hour), ...
-                                    data_matrix(quarter));
-
-    for time_inst = 1:size(data_matrix,1)
-        total_energy = total_energy + data_matrix(time_inst, col_energy);
-        % check if the last time_inst or not
-        %  -> if the last time_inst, break the loop                
-        if time_inst == size(data_matrix,1)
-            output_matrix(record,col_building:col_P2) = data_matrix(time_inst, col_building:col_P2);
-            output_matrix(record,col_energy) = total_energy; % save the total energy during the quarter
-            break;
-        % Check if the new quarter or not
-        elseif dateTime(time_inst) == dateTime(time_inst+1)
-            % If the record has the same dateTime as next record, store the accumulated energy transaction with predictors
-            total_energy =  total_energy + data_matrix(time_inst+1, col_energy);
-        elseif dateTime(time_inst) + dateTm
-        output_matrix(record,col_building:col_P2) = data_matrix(time_inst, col_building:col_P2);
-        output_matrix(record,col_energy) = total_energy + data_matrix(time_inst+1, col_energy); % save the total energy during the quarter
-        % Reset the accumulated energy for specific time record 
-        total_energy = 0;
-        % Move to next record
-        record = record+1;
-        end
+    % Define empty space for a duration; year, month, day
+    currentDate = min(T.StartDate);
+    i = 1;
+    while currentDate <= max(T.EndDate)
+        calendarMatrix.year(1+(i-1)*96:i*96,1) = ones(96,1).*year(currentDate);
+        calendarMatrix.month(1+(i-1)*96:i*96,1) = ones(96,1).*month(currentDate);
+        calendarMatrix.day(1+(i-1)*96:i*96,1) = ones(96,1).*day(currentDate);
+        currentDate = currentDate + 1;        
+        i = i+1;
+    end
+    % Define hour and quarter
+    calendarMatrix.hour(1) = 0;
+    calendarMatrix.quarter(1) = 0;       
+    for i = 1:size(calendarMatrix.year,1)-1
+        calendarMatrix.hour(i+1,1) = mod(i,24);
+        calendarMatrix.quarter(i+1,1) = mod(i,4);      
+    end
+    for i = 1:size(calendarMatrix.year,1)
+            calendarMatrix.energy(i,1) = 0;
     end
     
-    
-    for time_inst = 1:size(data_matrix,1)
-        total_energy = total_energy + data_matrix(time_inst, col_energy);
-        % check if the last time_inst or not
-        %  -> if the last time_inst, break the loop
-        if time_inst == size(data_matrix,1)
-            output_matrix(record,col_building:col_P2) = data_matrix(time_inst, col_building:col_P2);
-            output_matrix(record,col_energy) = total_energy; % save the total energy during the quarter
-            break;
-        % Check if the new quarter or not
-        elseif data_matrix(time_inst,col_quarter) ~= data_matrix(time_inst+1,col_quarter) 
-            % If the record is for new quarter, store the accumulated energy transaction with predictors
-            % Copy records except energyTrans and SOC
-            output_matrix(record,col_building:col_P2) = data_matrix(time_inst, col_building:col_P2);
-            output_matrix(record,col_energy) = total_energy; % save the total energy during the quarter
-            % Reset the accumulated energy for specific time record 
-            total_energy = 0;
-            % Move to next record
-            record = record+1;
+    % Fetch year, month, day, hour, quarter from the
+    for record = 1:size(data_matrix,1)
+        calendar = cellstr(strcat(num2str(calendarMatrix.year), ...
+                                                      num2str(calendarMatrix.month), ...
+                                                      num2str(calendarMatrix.day), ...
+                                                      num2str(calendarMatrix.hour), ...
+                                                      num2str(calendarMatrix.quarter)));
+        data = cellstr(strcat(num2str(data_matrix(:,col_year)), ...
+                                    num2str(data_matrix(:,col_month)), ...
+                                    num2str(data_matrix(:,col_day)), ...
+                                    num2str(data_matrix(:,col_hour)), ...
+                                    num2str(data_matrix(:,col_quarter))));
+        for i = 1:size(calendar,1)
+            if data{record} == calendar{i}    
+                calendarMatrix.energy(i,1) = calendarMatrix.energy(i,1) + sum(data_matrix(record, col_energy));
+            end
         end
     end
-    
+        
     % Put SOC [%]
-    output_matrix(:, col_soc) = zeros(size(output_matrix,1),1);
+    calendarMatrix.soc= zeros(size(calendarMatrix.energy,1),1);
     
     %% output
-    % Write the data to csv files
-    % Write header
-    hedder = {'BuildingIndex', 'Year', 'Month', 'Day', 'Hour', 'Quarter', 'P1(Day in a week)', 'P2(Holiday or not)',...
-                      'Charge/Discharge[kwh]', 'SOC [%]'};
-    fid = fopen(outputFileName,'wt');
-    fprintf(fid,'%s,',hedder{:});
-    fprintf(fid,'\n');
-    % Write data
-    fprintf(fid,['%d,', '%4d,', '%02d,', '%02d,', '%02d,', '%d,', '%d,', '%d,', '%f,', '%f,' '\n'], output_matrix');
-    fclose(fid);
-    
+    writetable(struct2table(calendarMatrix),'myPatientData.csv');
+
+%     % Write the data to csv files
+%     % Write header
+%     hedder = {'BuildingIndex', 'Year', 'Month', 'Day', 'Hour', 'Quarter', 'P1(Day in a week)', 'P2(Holiday or not)',...
+%                       'Charge/Discharge[kwh]', 'SOC [%]'};
+%     fid = fopen(outputFileName,'wt');
+%     fprintf(fid,'%s,',hedder{:});
+%     fprintf(fid,'\n');
+%     % Write data
+%     fprintf(fid,['%d,', '%4d,', '%02d,', '%02d,', '%02d,', '%d,', '%d,', '%d,', '%f,', '%f,' '\n'], struct2table(calendarMatrix));
+%     fclose(fid);
+%     
     % Show the longTermData as an graph
-    plot(output_matrix(:,9));
+    plot(calendarMatrix.energy);
     
     
     
