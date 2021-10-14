@@ -33,7 +33,7 @@ function weight = getWeight(predictors, forecasted, target)
     for hour = 1:24
         objFunc = @(weight) objectiveFunc(weight, data(hour).forecast, data(hour).target);
         rng default  % For reproducibility
-        nvars = 2;
+        nvars = 3;
         lb = [0, 0];
         ub = [1, 1];
         options = optimoptions('particleswarm', ...

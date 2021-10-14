@@ -33,20 +33,22 @@ function flag = getEVModel_OneDay(shortTermPastData, forecastData, resultFilePat
 
     %% Error recognition: Check mat files exist
     name1 = [path, '\', 'EV_trainedKmeans_', num2str(buildingIndex), '.mat'];
-    name2 = [path, '\', 'EV_trainedNeuralNet_', num2str(buildingIndex), '.mat'];
-    name3 = [path, '\', 'EV_errDist_', num2str(buildingIndex), '.mat'];
-    name4 = [path, '\', 'EV_weight_', num2str(buildingIndex), '.mat'];
-    if exist(name1) == 0 || exist(name2) == 0 || exist(name3) == 0 || exist(name4) == 0
+    name2 = [path, '\', 'EV_trainedLSTM_', num2str(buildingIndex), '.mat'];
+    name3 = [path, '\', 'EV_trainedNeuralNet_', num2str(buildingIndex), '.mat'];
+    name4 = [path, '\', 'EV_errDist_', num2str(buildingIndex), '.mat'];
+    name5 = [path, '\', 'EV_weight_', num2str(buildingIndex), '.mat'];
+    if exist(name1) == 0 || exist(name2) == 0 || exist(name3) == 0 || exist(name4) == 0 || exist(name5) == 0
         flag = -1;
         return
     end
     
     %% Load mat files
     s(1).fname = 'EV_trainedKmeans_';
-    s(2).fname = 'EV_trainedNeuralNet_';
-    s(3).fname = 'EV_errDist_';
-    s(4).fname = 'EV_weight_';
-    s(5).fname = num2str(buildingIndex);    
+    s(2).fname = 'EV_trainedLSTM_';
+    s(3).fname = 'EV_trainedNeuralNet_';
+    s(4).fname = 'EV_errDist_';
+    s(5).fname = 'EV_weight_';
+    s(6).fname = num2str(buildingIndex);    
     extention='.mat';
     for i = 1:size(s,2)-1
         name(i).string = strcat(s(i).fname, s(end).fname);
@@ -59,7 +61,8 @@ function flag = getEVModel_OneDay(shortTermPastData, forecastData, resultFilePat
     %   1. k-menas
     %   2. Neural network
     [predData.IndEnergy(:,1), predData.IndSOC(:,1)]  = kmeansEV_Forecast(predictorTable, path);
-    [predData.IndEnergy(:,2), predData.IndSOC(:,2)] = neuralNetEV_Forecast(predictorTable, path);  
+    [predData.IndEnergy(:,2), predData.IndSOC(:,2)] = LSTMEV_Forecast(predictorTable, path); 
+    [predData.IndEnergy(:,3), predData.IndSOC(:,3)] = neuralNetEV_Forecast(predictorTable, path);  
     
     %% Get combined prediction result with weight for each algorithm
     % Prepare the tables to store the deterministic forecasted result (ensemble forecasted result)

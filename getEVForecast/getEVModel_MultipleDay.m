@@ -17,10 +17,11 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
     
     %% Error recognition: Check mat files exist
     name1 = [pwd, '\', 'EV_trainedKmeans_', num2str(buildingIndex), '.mat'];
-    name2 = [pwd, '\', 'EV_trainedNeuralNet_', num2str(buildingIndex), '.mat'];
-    name3 = [pwd, '\', 'EV_trainingData_', num2str(buildingIndex), '.mat'];
-    name4 = [pwd, '\', 'EV_weight_', num2str(buildingIndex), '.mat'];
-    if exist(name1) == 0 || exist(name2) == 0 || exist(name3) == 0 || exist(name4) == 0 
+    name2 = [pwd, '\', 'EV_trainedLSTM_', num2str(buildingIndex), '.mat'];
+    name3 = [pwd, '\', 'EV_trainedNeuralNet_', num2str(buildingIndex), '.mat'];
+    name4 = [pwd, '\', 'EV_trainingData_', num2str(buildingIndex), '.mat'];
+    name5 = [pwd, '\', 'EV_weight_', num2str(buildingIndex), '.mat'];
+    if exist(name1) == 0 || exist(name2) == 0 || exist(name3) == 0 || exist(name4) == 0 || exist(name5) == 0 
         flag = -1;
         disp('There are missing .mat files from setEV');
         return
@@ -28,10 +29,11 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
     
     %% Load mat files
     s(1).fname = 'EV_trainedKmeans_';
-    s(2).fname = 'EV_trainedNeuralNet_';
-    s(3).fname = 'EV_trainingData_';
-    s(4).fname = 'EV_weight_';
-    s(5).fname = num2str(buildingIndex);    
+    s(2).fname = 'EV_trainedLSTM_';
+    s(3).fname = 'EV_trainedNeuralNet_';
+    s(4).fname = 'EV_trainingData_';
+    s(5).fname = 'EV_weight_';
+    s(6).fname = num2str(buildingIndex);    
     extention='.mat';
     for i = 1:size(s,2)-1
         name(i).string = strcat(s(i).fname, s(end).fname);
@@ -43,8 +45,11 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
     % Two methods are combined
     %   1. k-menas
     %   2. Neural network
+    
+   
     [predData.IndEnergy(:,1), predData.IndSOC(:,1)]  = kmeansEV_Forecast(predictorTable, pwd);
-    [predData.IndEnergy(:,2), predData.IndSOC(:,2)] = neuralNetEV_Forecast(predictorTable, pwd);  
+    [predData.IndEnergy(:,2), predData.IndSOC(:,2)]  = LSTMEV_Forecast(predictorTable, pwd);
+    [predData.IndEnergy(:,3), predData.IndSOC(:,3)] = neuralNetEV_Forecast(predictorTable, pwd);  
     
     %% Get combined prediction result with weight for each algorithm
     % Prepare the tables to store the deterministic forecasted result (ensemble forecasted result)
