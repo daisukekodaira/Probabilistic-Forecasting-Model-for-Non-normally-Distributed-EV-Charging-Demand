@@ -13,10 +13,22 @@ function [predEnergyTrans, predSOC] = LSTMEV_Forecast(forecastData, path)
     load(load_name,'-mat');
     
    %% Forecast 
-   
+    %% Forecast
     XTest = table2array(forecastData).';
-    predEnergyTrans = predict(net_Trans,XTest,'MiniBatchSize',1);
-    predSOC = predict(net_SOC,XTest,'MiniBatchSize',1);
+    net_Trans = predictAndUpdateState(net_Trans,x);
+    net_SOC = predictAndUpdateState(net_SOC,x);
+
+    numTimeStepsTest = size(XTest,2);
+    for i = 1:numTimeStepsTest
+         [net_Trans,predEnergyTrans(:,i)] = predictAndUpdateState(net_Trans,XTest(:,i),'ExecutionEnvironment','auto');
+    end
+    predEnergyTrans = sig_Trans*predEnergyTrans + mu_Trans;
+    
+    for i = 1:numTimeStepsTest
+         [net_SOC,predSOC(:,i)] = predictAndUpdateState(net_SOC,XTest(:,i),'ExecutionEnvironment','auto');
+    end
+    predSOC = sig_SOC*predSOC + mu_SOC;
+    
 
    
  

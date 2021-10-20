@@ -38,7 +38,7 @@ for i = 1:days
     resultSummary.PIcoverRateBoot(i, 1) = PICoverRate.ensembleBoot;
     resultSummary.MAPE(i, 1) = MAPE.ensemble;
     resultSummary.RMSE(i, 1) = RMSE.ensemble;
-    resultSummary.PIWidth(i, 1) = PIWidth.ensemble;
+    resultSummary.PIWidth(i,1) = PIWidth.ensemble;
     resultSummary.PIWidthBoot(i, 1) = PIWidth.ensembleBoot;
     % get the date to be forecasted. It properly works in case the
     % forecasting is only for whole 1 day.
