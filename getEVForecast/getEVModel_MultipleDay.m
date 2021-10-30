@@ -44,7 +44,8 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
     %% Get individual prediction for test data
     % Two methods are combined
     %   1. k-menas
-    %   2. Neural network
+    %   2. LSTM
+    %   3. Neural network
     
    
     [predData.IndEnergy(:,1), predData.IndSOC(:,1)]  = kmeansEV_Forecast(predictorTable, pwd);
@@ -91,6 +92,8 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
 
     % Energy emand (k-means)
     [~, MAPE.kmeans, RMSE.kmeans, ~] = getDailyPerformance([], predData.IndEnergy(:,1), targetTable.EnergyDemand);
+    % Energy demand (Neural Network)
+    [~, MAPE.LSTM, RMSE.LSTM, ~] = getDailyPerformance([], predData.IndEnergy(:,3), targetTable.EnergyDemand);
     % Energy demand (Neural Network)
     [~, MAPE.neuralNet, RMSE.neuralNet, ~] = getDailyPerformance([], predData.IndEnergy(:,2), targetTable.EnergyDemand);
     % SOC   

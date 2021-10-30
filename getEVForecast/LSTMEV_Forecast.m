@@ -13,12 +13,9 @@ function [predEnergyTrans, predSOC] = LSTMEV_Forecast(forecastData, path)
     load(load_name,'-mat');
     
    %% Forecast 
-   
-    XTest = table2array(forecastData).';
-    predEnergyTrans = predict(net_Trans,XTest,'MiniBatchSize',1);
-    predSOC = predict(net_SOC,XTest,'MiniBatchSize',1);
-
+    forecastData = table2array(forecastData).';
+    predEnergyTrans = predict(trainedLSTM_EnergyTrans,forecastData);
+    predSOC = predict(trainedLSTM_SOC,forecastData);
    
  
 end
-
