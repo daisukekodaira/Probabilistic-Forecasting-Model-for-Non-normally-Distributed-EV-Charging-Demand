@@ -9,7 +9,7 @@ clear all; clc; close all;
 % Read Data
 allPastData = readtable('LongTermEVData.csv');
 % Parameters
-days = 2;  % how many days to be repeatedly forecasted
+days = 30;  % how many days to be repeatedly forecasted
 Nsteps = size(allPastData,1); 
 
 %% Perform forecasting for multiple days

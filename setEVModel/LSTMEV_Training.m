@@ -2,9 +2,8 @@ function LSTMEV_Training(trainData, colPredictors, path)
 
 %% Train the model for Energy Transition
     % Training for Energy Trantision
-    % Training for SOC
-    
-  trainData = trainData(34731:34922,:);  
+    % Training for SOC 
+  %%trainData = trainData(376:663,:); 
   trainedLSTM_EnergyTrans = LSTM_train(trainData, colPredictors, 'ChargeDischargeKwh');
   trainedLSTM_SOC = LSTM_train(trainData, colPredictors, 'SOCPercent');
     
@@ -19,33 +18,33 @@ end
 
 function trainedLSTM = LSTM_train(trainData, columnPredictors, columnTarget)
 
+ 
+ n_instance = size(trainData,1);        
+ x = transpose(table2array(trainData(1:n_instance, columnPredictors))); % input(feature)
+ t = transpose(table2array(trainData(1:n_instance, columnTarget))); % target
 
-n_instance = size(trainData,1);  
-x = transpose(table2array(trainData(1:n_instance, columnPredictors))); % input(feature)
-t = transpose(table2array(trainData(1:n_instance, columnTarget))); % target
 
  numFeatures = size(x,1);
  numResponses = size(t,1);
+ 
     
-numHiddenUnits = 200;
+numHiddenUnits = 100;
 
 layers = [ ...
     sequenceInputLayer(numFeatures)
     lstmLayer(numHiddenUnits,'OutputMode','sequence')
-    fullyConnectedLayer(50)
-    dropoutLayer(0.5)
     fullyConnectedLayer(numResponses)
     regressionLayer];
     
-maxEpochs = 60;
-miniBatchSize = 20;
+maxEpochs = 20;
+miniBatchSize = 800;
 
 options = trainingOptions('adam', ...
+    'ExecutionEnvironment','auto',...
     'MaxEpochs',maxEpochs, ...
     'MiniBatchSize',miniBatchSize, ...
     'InitialLearnRate',0.01, ...
     'GradientThreshold',1, ...
-    'Shuffle','never', ...
     'Plots','training-progress',...
     'Verbose',0);
     

@@ -93,9 +93,9 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
     % Energy emand (k-means)
     [~, MAPE.kmeans, RMSE.kmeans, ~] = getDailyPerformance([], predData.IndEnergy(:,1), targetTable.EnergyDemand);
     % Energy demand (Neural Network)
-    [~, MAPE.LSTM, RMSE.LSTM, ~] = getDailyPerformance([], predData.IndEnergy(:,3), targetTable.EnergyDemand);
+    [~, MAPE.LSTM, RMSE.LSTM, ~] = getDailyPerformance([], predData.IndEnergy(:,2), targetTable.EnergyDemand);
     % Energy demand (Neural Network)
-    [~, MAPE.neuralNet, RMSE.neuralNet, ~] = getDailyPerformance([], predData.IndEnergy(:,2), targetTable.EnergyDemand);
+    [~, MAPE.neuralNet, RMSE.neuralNet, ~] = getDailyPerformance([], predData.IndEnergy(:,3), targetTable.EnergyDemand);
     % SOC   
     %     [PICoverRate.ensemble, MAPE.ensemble] = getDailyPerformance(socPI, predData.EnsembleEnergy, targetTable.EnergyDemand, ci_percentage);
     
