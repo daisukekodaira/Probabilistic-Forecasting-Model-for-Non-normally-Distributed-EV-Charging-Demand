@@ -3,31 +3,42 @@ function LSTMEV_Training(trainData, colPredictors, path)
 %% Train the model for Energy Transition
     % Training for Energy Trantision
     % Training for SOC 
-  %%trainData = trainData(376:663,:); 
-  trainedLSTM_EnergyTrans = LSTM_train(trainData, colPredictors, 'ChargeDischargeKwh');
-  trainedLSTM_SOC = LSTM_train(trainData, colPredictors, 'SOCPercent');
+ 
+ predata = trainData{:,[9 end]};
+ predata = fillmissing(predata,'previous');% Replace NaN with the previous non-missing value
+
+meandata = mean(predata);
+sigdata = std(predata); 
+if sigdata(2)==0 % in case of SOC, its valus is usually 0. so it make NAN value
+    sigdata(2)=1;
+end
+dataTrainStandardized = array2table((predata - meandata) ./ sigdata);  
+
+ n_instance = size(trainData,1);        
+ x = transpose(table2array(trainData(1:n_instance, colPredictors))); % input(feature)
+ t1 = transpose(table2array(dataTrainStandardized(1:n_instance, 1 ))); % target(ChargeDischargeKwh)
+ t2 = transpose(table2array(dataTrainStandardized(1:n_instance, 2 ))); % target(SOC)
+
+
+  trainedLSTM_EnergyTrans = LSTM_train(x,t1);
+  trainedLSTM_SOC = LSTM_train(x,t2);
     
     %% save result mat file
     building_num = num2str(trainData.BuildingIndex(1));
     save_name1 = '\EV_trainedLSTM_';
     save_fullPath = strcat(path,save_name1,building_num,'.mat');
     clearvars path;
-    save(save_fullPath, 'trainedLSTM_EnergyTrans', 'trainedLSTM_SOC');
+    save(save_fullPath, 'trainedLSTM_EnergyTrans', 'trainedLSTM_SOC','meandata','sigdata');
+    
     
 end
 
-function trainedLSTM = LSTM_train(trainData, columnPredictors, columnTarget)
-
+function trainedLSTM = LSTM_train( columnPredictors, columnTarget)
  
- n_instance = size(trainData,1);        
- x = transpose(table2array(trainData(1:n_instance, columnPredictors))); % input(feature)
- t = transpose(table2array(trainData(1:n_instance, columnTarget))); % target
 
-
- numFeatures = size(x,1);
- numResponses = size(t,1);
+ numFeatures = size(columnPredictors,1);
+ numResponses = size(columnTarget,1);
  
-    
 numHiddenUnits = 100;
 
 layers = [ ...
@@ -36,19 +47,18 @@ layers = [ ...
     fullyConnectedLayer(numResponses)
     regressionLayer];
     
-maxEpochs = 20;
-miniBatchSize = 800;
 
 options = trainingOptions('adam', ...
-    'ExecutionEnvironment','auto',...
-    'MaxEpochs',maxEpochs, ...
-    'MiniBatchSize',miniBatchSize, ...
+    'MaxEpochs',150, ...
+    'GradientThreshold',1.2, ...
     'InitialLearnRate',0.01, ...
-    'GradientThreshold',1, ...
+    'LearnRateSchedule','piecewise', ...
+    'LearnRateDropPeriod',125, ...
+    'LearnRateDropFactor',0.2, ...
     'Plots','training-progress',...
     'Verbose',0);
     
-    net = trainNetwork(x,t,layers,options);% Train the network using the data in x and t
+    net = trainNetwork(columnPredictors,columnTarget,layers,options);
     
     trainedLSTM = net;
     

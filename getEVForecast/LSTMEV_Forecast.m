@@ -12,13 +12,13 @@ function [predEnergyTrans, predSOC] = LSTMEV_Forecast(forecastData, path)
     
    %% Forecast 
     forecastData = table2array(forecastData).';
-    predEnergyTrans = LSTMforecast(trainedLSTM_EnergyTrans,forecastData);
-    predSOC = LSTMforecast(trainedLSTM_SOC,forecastData);
+    predEnergyTrans = LSTMforecast(trainedLSTM_EnergyTrans,forecastData,meandata(1),sigdata(1));
+    predSOC = LSTMforecast(trainedLSTM_SOC,forecastData,meandata(2),sigdata(2));
    
  
 end
 
-function YPred = LSTMforecast(trainedNetAll, forecastData)
+function forecastResult = LSTMforecast(trainedNetAll,forecastData,mu,sig)
    
     trainedNetAll = resetState(trainedNetAll);
     trainedNetAll = predictAndUpdateState(trainedNetAll,forecastData);
@@ -26,4 +26,9 @@ function YPred = LSTMforecast(trainedNetAll, forecastData)
     for i = 1:numTimeStepsTest
          [trainedNetAll,YPred(:,i)] = predictAndUpdateState(trainedNetAll,forecastData(:,i),'ExecutionEnvironment','auto');
     end
+    
+    YPred = sig*YPred + mu;
+    
+    forecastResult = YPred;
+    
 end
