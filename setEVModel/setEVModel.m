@@ -55,7 +55,6 @@ function setEVModel(LongTermPastData)
     [validData.PredEnergy(:,1), validData.PredSOC(:,1)]  = kmeansEV_Forecast(validData.Predictor, path);
     [validData.PredEnergy(:,2), validData.PredSOC(:,2)] = neuralNetEV_Forecast(validData.Predictor, path);
     [validData.PredEnergy(:,3), validData.PredSOC(:,3)] = LSTMEV_Forecast(validData.Predictor, path);
-    %     [PredEnergyTrans_Valid(:,3), PredSOC_Valid(:,3)] = LSTMEV_Forecast(validData, path); % add LSTM here later
     
     %% Optimize the coefficients (weights) for the ensembled forecasting model
     weight.Energy = getWeight(validData.Predictor, validData.PredEnergy, validData.TargetEnergy);

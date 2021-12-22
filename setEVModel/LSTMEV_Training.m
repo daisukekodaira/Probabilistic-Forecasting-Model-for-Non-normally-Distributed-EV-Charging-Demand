@@ -28,36 +28,41 @@ dataTrainStandardized = array2table((predata - meandata) ./ sigdata);
     save_name1 = '\EV_trainedLSTM_';
     save_fullPath = strcat(path,save_name1,building_num,'.mat');
     clearvars path;
-    save(save_fullPath, 'trainedLSTM_EnergyTrans', 'trainedLSTM_SOC','meandata','sigdata');
+    save(save_fullPath, 'trainedLSTM_EnergyTrans', 'trainedLSTM_SOC','meandata','sigdata','x');
     
     
 end
 
-function trainedLSTM = LSTM_train( columnPredictors, columnTarget)
+function trainedLSTM = LSTM_train(columnPredictors, columnTarget)
  
 
- numFeatures = size(columnPredictors,1);
- numResponses = size(columnTarget,1);
- 
-numHiddenUnits = 100;
 
+numFeatures = size(columnPredictors,1);
+numResponses = 1;   % 1
+numHiddenUnits1 = 30;
 layers = [ ...
-    sequenceInputLayer(numFeatures)
-    lstmLayer(numHiddenUnits,'OutputMode','sequence')
+    sequenceInputLayer(numFeatures) 
+    gruLayer(numHiddenUnits1,'OutputMode','sequence')   
     fullyConnectedLayer(numResponses)
     regressionLayer];
-    
+
+maxEpochs = 50;
+if columnTarget==0 % in case of SOC, its valus is usually 0. 
+    maxEpochs = 4;
+end
+miniBatchSize = 64;
 
 options = trainingOptions('adam', ...
-    'MaxEpochs',150, ...
+    'MaxEpochs',maxEpochs, ...
+    'MiniBatchSize',miniBatchSize,... 
     'GradientThreshold',1.2, ...
-    'InitialLearnRate',0.01, ...
+    'InitialLearnRate',0.1,...
     'LearnRateSchedule','piecewise', ...
-    'LearnRateDropPeriod',125, ...
-    'LearnRateDropFactor',0.2, ...
-    'Plots','training-progress',...
-    'Verbose',0);
-    
+    'LearnRateDropPeriod',10, ...
+    'LearnRateDropFactor',0.2,  ...
+    'Verbose',0,  ...
+    'Plots','training-progress');
+
     net = trainNetwork(columnPredictors,columnTarget,layers,options);
     
     trainedLSTM = net;

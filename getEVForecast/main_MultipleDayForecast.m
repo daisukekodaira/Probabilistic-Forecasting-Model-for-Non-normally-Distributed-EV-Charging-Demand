@@ -71,6 +71,7 @@ getPerformanceGraph(outTables, dayBoot,  ['The worst BootPI coverage day / ' dat
 getPerformanceGraph(outTables, day, ['The worst RMSE day / ' datestr(resultSummary.date(day))]);
 
 
+
 function getPerformanceGraph(outTables, day, figTitle)
     PI = [outTables{day}.EnergyPImax outTables{day}.EnergyPImin];
     PIBoot = [outTables{day}.EnergyPIBootmax outTables{day}.EnergyPIBootmin];
