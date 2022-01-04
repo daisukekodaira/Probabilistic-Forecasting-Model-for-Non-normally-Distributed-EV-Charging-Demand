@@ -47,7 +47,6 @@ function setEVModel(LongTermPastData)
     kmeansEV_Training(trainData, colPredictors, path);
     neuralNetEV_Training(trainData, colPredictors, path);
     LSTMEV_Training(trainData, colPredictors, path);
-    %     LSTMEV_Training();    % add LSTM here later
     
     %% Validate the performance of each model
     % Note: return shouldn't be located inside of structure. It should be sotred as matrix.

@@ -45,9 +45,7 @@ function [PICoverRate, MAPE, RMSE, PIWidth, outTable] = getEVModel_MultipleDay(s
     % Two methods are combined
     %   1. k-menas
     %   2. LSTM
-    %   3. Neural network
-    
-   
+    %   3. Neural network   
     [predData.IndEnergy(:,1), predData.IndSOC(:,1)]  = kmeansEV_Forecast(predictorTable, pwd);
     [predData.IndEnergy(:,2), predData.IndSOC(:,2)]  = LSTMEV_Forecast(predictorTable, pwd);
     [predData.IndEnergy(:,3), predData.IndSOC(:,3)] = neuralNetEV_Forecast(predictorTable, pwd);  

@@ -1,6 +1,6 @@
 clear all; clc; close all;
 
-setEVModel([pwd, '\','LongTermEVData.csv']);
+setEVModel([pwd, '\','LongTermEVData_debug.csv']);
 
 
 disp('.... Done!');
