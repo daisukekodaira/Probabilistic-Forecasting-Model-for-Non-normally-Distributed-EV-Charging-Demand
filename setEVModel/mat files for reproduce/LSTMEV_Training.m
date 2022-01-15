@@ -28,7 +28,7 @@ dataTrainStandardized = array2table((predata - meandata) ./ sigdata);
     save_name1 = '\EV_trainedLSTM_';
     save_fullPath = strcat(path,save_name1,building_num,'.mat');
     clearvars path;
-    save(save_fullPath, 'trainedLSTM_EnergyTrans', 'trainedLSTM_SOC','meandata','sigdata','x','t1');
+    save(save_fullPath, 'trainedLSTM_EnergyTrans', 'trainedLSTM_SOC','meandata','sigdata','x');
     
     
 end
@@ -42,7 +42,7 @@ numResponses = 1;   % 1
 numHiddenUnits1 = 20;
 layers = [ ...
     sequenceInputLayer(numFeatures) 
-    lstmLayer(numHiddenUnits1,'OutputMode','sequence')   
+    gruLayer(numHiddenUnits1,'OutputMode','sequence')   
     fullyConnectedLayer(numResponses)
     regressionLayer];
 
