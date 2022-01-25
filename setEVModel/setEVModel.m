@@ -30,7 +30,7 @@ function setEVModel(LongTermPastData)
     % Parameter
     ValidDays = 3; % it must be above 1 day. 3days might provide the best performance
     nValidData = 96*ValidDays; % 24*4*day   valid_data = longPast(end-n_valid_data+1:end, :); 
-    colPredictors = {'BuildingIndex', 'Year', 'Month', 'Day', 'Hour', 'Quarter', 'DayInWeek', 'HolidayOrNot'};
+    colPredictors = {'BuildingIndex', 'Year', 'Month', 'Day', 'Hour', 'Quarter'};
         
     %% Data restructure
     % Arrange the structure to be sotred for all data

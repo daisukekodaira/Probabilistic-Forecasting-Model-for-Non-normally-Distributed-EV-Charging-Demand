@@ -1,4 +1,4 @@
-function graph_desc(x, yLabel, y_pred, y_true, PI, PIBoot, name, ci_percentage)
+function graph_desc(x, yLabel, y_pred, y_true, PI, name, ci_percentage)
     % To overcome the bug in Matlab2019; it cannot display legneds lines in figs
     opengl software 
     
@@ -16,11 +16,11 @@ function graph_desc(x, yLabel, y_pred, y_true, PI, PIBoot, name, ci_percentage)
         CI = 100*(1-ci_percentage);
         p(4) = plot(PI(:,1),'b--', 'DisplayName', [num2str(CI) '% Prediction Interval'], 'LineWidth', 1);
         p(5) = plot(PI(:,2),'b--', 'LineWidth', 1);
-        p(6) = plot(PIBoot(:,1),'k--', 'DisplayName', [num2str(CI) '% Prediction Interval (Bootstrap)'], 'LineWidth', 1);
-        p(7) = plot(PIBoot(:,2),'k--', 'LineWidth', 1);
+        %p(6) = plot(PIBoot(:,1),'k--', 'DisplayName', [num2str(CI) '% Prediction Interval (Bootstrap)'], 'LineWidth', 1);
+        %p(7) = plot(PIBoot(:,2),'k--', 'LineWidth', 1);
         % Turn off the legends for some lines
         set(get(get(p(5),'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
-        set(get(get(p(7),'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
+        %set(get(get(p(7),'Annotation'),'LegendInformation'),'IconDisplayStyle','off');
     end
     % Labels of the graph
     xlabel('Time instances');
